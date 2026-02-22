@@ -1,0 +1,40 @@
+# Watcher Configuration
+# Location: SYSTEM/config/watchers.yaml
+
+# ===========================================
+# Gmail Watcher
+# ===========================================
+gmail_watcher:
+  enabled: true
+  poll_interval_seconds: 120  # 2 minutes
+  max_results_per_poll: 10
+  queue_folder: INPUT_QUEUES/Gmail
+  
+# ===========================================
+# WhatsApp Watcher (Silver Tier)
+# ===========================================
+whatsapp_watcher:
+  enabled: false  # Enable in Silver tier
+  poll_interval_seconds: 30  # 30 seconds
+  headless: false  # Always show browser for security
+  queue_folder: INPUT_QUEUES/WhatsApp
+  
+# ===========================================
+# Finance Watcher (Gold Tier)
+# ===========================================
+finance_watcher:
+  enabled: false  # Enable in Gold tier
+  schedule: "0 9 * * *"  # Daily at 9 AM
+  queue_folder: INPUT_QUEUES/Banking
+  
+# ===========================================
+# File Watcher
+# ===========================================
+file_watcher:
+  enabled: true
+  watch_paths:
+    - INPUT_QUEUES/Files
+  patterns:
+    - "*.txt"
+    - "*.md"
+    - "*.json"

@@ -1,0 +1,11 @@
+{
+  "email_id": "test_promotional_001",
+  "from": "newsletter@marketing-deals.com",
+  "to": "you@yourcompany.com",
+  "subject": "🔥 50% OFF - Today Only! Don't Miss Out!",
+  "body": "Hey there!\n\nYou won't believe the deals we have for you today!\n\n🎉 FLASH SALE - 50% OFF EVERYTHING! 🎉\n\nUse code: FLASH50 at checkout.\n\nBut hurry - this offer expires at midnight tonight!\n\n[SHOP NOW](https://marketing-deals.com/shop?utm_source=email&utm_campaign=flash50)\n\n---\n\nNot interested anymore? [Unsubscribe here](https://marketing-deals.com/unsubscribe?email=you@yourcompany.com)\n\nMarketing Deals Inc.\n123 Spam Street\nPromo City, PC 12345",
+  "labels": ["INBOX", "CATEGORY_PROMOTIONS"],
+  "received_at": "2026-02-17T08:00:00Z",
+  "has_attachments": false,
+  "attachments": []
+}

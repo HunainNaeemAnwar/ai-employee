@@ -1,0 +1,225 @@
+{
+  "main": {
+    "id": "26fd0c4aa7cb779c",
+    "type": "split",
+    "children": [
+      {
+        "id": "df6623199f2e7615",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "451765046fad34ad",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Dashboard.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Dashboard"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "ba7b4919572d6628",
+    "type": "split",
+    "children": [
+      {
+        "id": "92549d2b7c28761b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "0345afa863b31740",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "6acb1f8ce3f12a31",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "c1f42056786eee38",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "d39f0aa8284682c1",
+    "type": "split",
+    "children": [
+      {
+        "id": "2d3f8617cb10aa81",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3e9d376d7923c69c",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "README.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for README"
+            }
+          },
+          {
+            "id": "2a29c4fe73714268",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "README.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from README"
+            }
+          },
+          {
+            "id": "30a1fea3ae287e17",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "2fbda6e2ecee91ab",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "7ac10d149da169b2",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "README.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of README"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "451765046fad34ad",
+  "lastOpenFiles": [
+    "INPUT_QUEUES/Gmail/action_20260221_091427_e4b7aa3c.json",
+    "INPUT_QUEUES/Gmail/action_20260221_052947_251c76a1.json",
+    "PROCESSING/Failed_Approvals/APPROVAL_eb95db3b-6fd5-41d5-9c8e-22dd1c5b5d9a.md",
+    "PROCESSING/Approved/APPROVAL_eb95db3b-6fd5-41d5-9c8e-22dd1c5b5d9a.md",
+    "OUTPUT/Completed/approvals/APPROVAL_20b3c12a-6fba-4cc0-95cc-47cba8a96a25.md",
+    "PROCESSING/Approved/APPROVAL_20b3c12a-6fba-4cc0-95cc-47cba8a96a25.md",
+    "PROCESSING/Pending_Approval/APPROVAL_eb95db3b-6fd5-41d5-9c8e-22dd1c5b5d9a.md",
+    "SYSTEM/state/prompt.md",
+    "PROCESSING/In_Progress/action_20260221_042535_059e14d6.json",
+    "PROCESSING/Pending/action_20260221_042535_059e14d6.json",
+    "INPUT_QUEUES/Gmail/action_20260221_042535_059e14d6.json",
+    "PROCESSING/Pending_Approval/APPROVAL_20b3c12a-6fba-4cc0-95cc-47cba8a96a25.md",
+    "PROCESSING/In_Progress/action_20260221_042315_f183d872.json",
+    "PROCESSING/Pending/action_20260221_042315_f183d872.json",
+    "INPUT_QUEUES/Gmail/action_20260221_042316_a1317a25.json",
+    "INPUT_QUEUES/Gmail/action_20260221_042316_dbb9087f.json",
+    "INPUT_QUEUES/Gmail/action_20260221_042316_2d8edbcb.json",
+    "INPUT_QUEUES/Gmail/action_20260221_042316_25fd2245.json",
+    "PROCESSING/Failed_Approvals/APPROVAL_d8f6d4b2-dc43-414e-8dcd-5b801308598c.md",
+    "PROCESSING/Failed_Approvals/APPROVAL_9fe92ab1-2e30-43f0-83b5-f9284747ce1d.md",
+    "PROCESSING/Failed_Approvals/APPROVAL_d5c401dd-c0dd-4142-b6f2-2d27fc6d0c30.md",
+    "PROCESSING/Failed_Approvals/APPROVAL_a811b17e-5705-4fe4-b019-d7ce0aaf54d6.md",
+    "PROCESSING/Approved/APPROVAL_d8f6d4b2-dc43-414e-8dcd-5b801308598c.md",
+    "PROCESSING/Approved/APPROVAL_d5c401dd-c0dd-4142-b6f2-2d27fc6d0c30.md",
+    "PROCESSING/Approved/APPROVAL_a811b17e-5705-4fe4-b019-d7ce0aaf54d6.md",
+    "PROCESSING/Approved/APPROVAL_9fe92ab1-2e30-43f0-83b5-f9284747ce1d.md",
+    "PROCESSING/Pending_Approval/APPROVAL_a811b17e-5705-4fe4-b019-d7ce0aaf54d6.md",
+    "PROCESSING/Pending_Approval/APPROVAL_d8f6d4b2-dc43-414e-8dcd-5b801308598c.md",
+    "PROCESSING/Pending_Approval/APPROVAL_9fe92ab1-2e30-43f0-83b5-f9284747ce1d.md",
+    "PROCESSING/Pending_Approval/APPROVAL_d5c401dd-c0dd-4142-b6f2-2d27fc6d0c30.md",
+    "PROCESSING/Failed_Approvals/APPROVAL_b29f7019-f97e-4934-94d4-012027809a4e.md",
+    "PROCESSING/Approved/APPROVAL_b29f7019-f97e-4934-94d4-012027809a4e.md",
+    "PROCESSING/Failed_Approvals/APPROVAL_aca417b6-55b5-4d1d-992d-8067744175dc.md",
+    "PROCESSING/Approved/APPROVAL_aca417b6-55b5-4d1d-992d-8067744175dc.md",
+    "PROCESSING/Failed_Approvals/APPROVAL_b90f7d52-ef26-46d2-b740-b9e51248b902.md",
+    "PROCESSING/Approved/APPROVAL_b90f7d52-ef26-46d2-b740-b9e51248b902.md"
+  ]
+}

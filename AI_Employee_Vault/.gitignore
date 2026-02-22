@@ -1,0 +1,35 @@
+# AI Employee Vault - Git Ignore Rules
+
+# ===========================================
+# NEVER COMMIT - Secrets & Credentials
+# ===========================================
+SECURITY/.env
+SECURITY/*.json
+SECURITY/whatsapp_session/
+SECURITY/gmail_token.json
+
+# ===========================================
+# Runtime State (regenerated)
+# ===========================================
+SYSTEM/state/current_task.json
+SYSTEM/prompt.md
+SYSTEM/state/complete.flag
+
+# ===========================================
+# Logs (optional - commit audit logs if needed)
+# ===========================================
+# SYSTEM/logs/*.log
+# SECURITY/audit_logs/*.jsonl
+
+# ===========================================
+# Temporary Files
+# ===========================================
+*.tmp
+*.bak
+*~
+
+# ===========================================
+# OS Files
+# ===========================================
+.DS_Store
+Thumbs.db

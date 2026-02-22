@@ -1,0 +1,16 @@
+{
+  "email_id": "test_urgent_001",
+  "from": "john.smith@knownclient.com",
+  "to": "you@yourcompany.com",
+  "subject": "URGENT: Contract Review Needed by EOD",
+  "body": "Hi,\n\nI hope this email finds you well.\n\nWe have a critical contract that needs your review before end of day today. The deadline is firm as the client is waiting.\n\nCan you please review the attached contract and provide your feedback?\n\nKey points to check:\n- Payment terms (Section 3.2)\n- Delivery timeline (Section 5.1)\n- Liability clauses (Section 8)\n\nPlease let me know if you have any concerns or need clarification.\n\nThanks for your quick turnaround on this!\n\nBest regards,\nJohn Smith\nKnownClient Inc.\njohn.smith@knownclient.com\n(555) 123-4567",
+  "labels": ["INBOX", "IMPORTANT", "STARRED"],
+  "received_at": "2026-02-17T09:30:00Z",
+  "has_attachments": true,
+  "attachments": [
+    {
+      "filename": "contract_draft_v2.pdf",
+      "size": 128512
+    }
+  ]
+}

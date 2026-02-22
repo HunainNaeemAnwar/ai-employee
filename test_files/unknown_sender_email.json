@@ -1,0 +1,11 @@
+{
+  "email_id": "test_unknown_001",
+  "from": "stranger@suspicious-domain.com",
+  "to": "you@yourcompany.com",
+  "subject": "Great Business Opportunity!",
+  "body": "Dear Friend,\n\nI am reaching out with an exciting business proposition that could change your life!\n\nI represent a wealthy investor from overseas who needs your help to transfer a large sum of money. In return, you will receive 30% commission.\n\nThis is 100% legitimate and risk-free.\n\nPlease click here to learn more: http://suspicious-domain.com/offer\n\nOr reply with your:\n- Full name\n- Phone number\n- Bank account details\n\nUrgent response needed!\n\nBest regards,\nDr. Unknown Stranger\nCEO, Suspicious Domain Ltd.",
+  "labels": ["INBOX"],
+  "received_at": "2026-02-17T12:00:00Z",
+  "has_attachments": false,
+  "attachments": []
+}

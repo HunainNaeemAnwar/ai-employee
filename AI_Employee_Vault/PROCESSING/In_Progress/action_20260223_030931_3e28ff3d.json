@@ -1,0 +1,25 @@
+{
+  "id": "GmailWatcher_d2cda3c1",
+  "source": "GmailWatcher",
+  "timestamp": "2026-02-23T03:09:31.409701",
+  "type": "general",
+  "priority": "low",
+  "data": {
+    "email_id": "19c876627b2ad5cf",
+    "thread_id": "19c876627b2ad5cf",
+    "labels": [
+      "UNREAD",
+      "IMPORTANT",
+      "CATEGORY_PERSONAL",
+      "INBOX"
+    ],
+    "received_at": "2026-02-23T03:08:53",
+    "from": "Hunain Naeem Anwar <hunainnaeemanwar@gmail.com>",
+    "subject": "Proposal for Implementing a Structured Weekly Review Process",
+    "to": "arhaamkhan125@gmail.com",
+    "body": "Dear Team,\r\n\r\nI hope this message finds you well.\r\n\r\nI would like to propose implementing a structured weekly review process to\r\nimprove team alignment, productivity, and overall project visibility. As\r\nour workload and responsibilities continue to grow, having a consistent\r\nreview system can help us identify blockers early, track progress more\r\neffectively, and ensure we remain focused on high-priority objectives.\r\n\r\nThe proposed format would include:\r\n\r\n   -\r\n\r\n   A brief summary of completed tasks during the week\r\n   -\r\n\r\n   Current progress on ongoing projects\r\n   -\r\n\r\n   Key challenges or risks\r\n   -\r\n\r\n   Goals and priorities for the upcoming week\r\n\r\nThis process can be conducted through a short virtual meeting or a shared\r\ndocument template, depending on what best suits the team\u2019s workflow. The\r\ngoal is not to increase meetings but to create clarity, accountability, and\r\nsmoother collaboration.\r\n\r\nI would appreciate your thoughts on this idea and any suggestions for\r\nimproving the approach. If there is agreement, I can prepare a simple\r\ntemplate to get us started next week.\r\n\r\nLooking forward to your feedback.\r\n\r\nBest regards,\r\nHunain\r\n",
+    "has_attachments": false
+  },
+  "status": "new",
+  "hitl_required": true
+}

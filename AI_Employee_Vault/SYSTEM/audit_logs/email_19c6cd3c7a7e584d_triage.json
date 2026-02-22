@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-02-19T02:27:00Z",
+  "task_id": "email_19c6cd3c7a7e584d",
+  "action": "email_triage_completed",
+  "details": {
+    "email_id": "19c6cd3c7a7e584d",
+    "from": "Glassdoor Jobs <noreply @glassdoor.com>",
+    "subject": "Seven Zones Travel is hiring. Apply Now.",
+    "category": "promotional",
+    "priority": "low",
+    "sender_type": "unknown",
+    "decision": "no_action_required",
+    "reasoning": "Promotional job alert email from Glassdoor. No response needed. Informational only.",
+    "autonomy_level": "auto_approve",
+    "labels": ["UNREAD", "CATEGORY_UPDATES", "INBOX"]
+  },
+  "outcome": "processed_no_reply",
+  "next_action": "archive_email"
+}

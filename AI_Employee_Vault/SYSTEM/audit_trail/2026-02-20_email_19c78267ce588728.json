@@ -1,0 +1,27 @@
+{
+  "audit_id": "audit_2026-02-20T04:06:45_email_19c78267ce588728",
+  "timestamp": "2026-02-20T04:06:45",
+  "task_id": "email_19c78267ce588728",
+  "action": "email_triage_hitl_escalation",
+  "actor": "ai_employee",
+  "details": {
+    "email_id": "19c78267ce588728",
+    "sender": "hunainnaeemanwar @gmail.com",
+    "sender_name": "Hunain Naeem Anwar",
+    "subject": "Proposal for Collaboration Opportunity",
+    "triage_result": {
+      "priority": "medium",
+      "category": "collaboration_inquiry",
+      "sender_status": "unknown",
+      "autonomy_level": "HITL"
+    },
+    "action_taken": "created_approval_request",
+    "approval_file": "PROCESSING/Pending_Approval/email_19c78267ce588728_approval.json",
+    "escalation_reason": "Unknown sender - first-time contact per Company Handbook HITL rules"
+  },
+  "state_changes": {
+    "previous_status": "in_progress",
+    "new_status": "pending_approval",
+    "iteration": 1
+  }
+}

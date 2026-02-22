@@ -1,0 +1,11 @@
+{
+  "email_id": "test_general_001",
+  "from": "sarah@partnercompany.com",
+  "to": "you@yourcompany.com",
+  "subject": "Meeting Next Week?",
+  "body": "Hi,\n\nHope you're having a great week!\n\nI wanted to schedule a meeting for next week to discuss our ongoing partnership and explore new opportunities.\n\nAre you available any of these times?\n- Tuesday Feb 20: 2 PM - 4 PM\n- Wednesday Feb 21: 10 AM - 12 PM\n- Thursday Feb 22: 3 PM - 5 PM\n\nLet me know what works best for you and I'll send over a calendar invite.\n\nLooking forward to catching up!\n\nBest,\nSarah Johnson\nPartner Company\nsarah@partnercompany.com",
+  "labels": ["INBOX"],
+  "received_at": "2026-02-17T11:00:00Z",
+  "has_attachments": false,
+  "attachments": []
+}

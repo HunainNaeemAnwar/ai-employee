@@ -1,0 +1,26 @@
+{
+  "audit_id": "email_19c6ba17bdab4e7e_triage",
+  "timestamp": "2026-02-19T03:05:00.000000",
+  "task_id": "email_19c6ba17bdab4e7e",
+  "action": "EMAIL_TRIAGE_AND_ESCALATION",
+  "input": {
+    "email_id": "19c6ba17bdab4e7e",
+    "subject": "Security alert",
+    "from": "Google <no-reply @accounts.google.com>",
+    "received_at": "2026-02-17T17:44:28"
+  },
+  "output": {
+    "category": "SECURITY_NOTIFICATION",
+    "priority": "HIGH",
+    "autonomy_level": "HITL_REQUIRED",
+    "approval_file": "PROCESSING/Pending_Approval/approval_email_19c6ba17bdab4e7e_security_alert.json"
+  },
+  "decision_log": {
+    "sender_verified": false,
+    "sender_type": "automated_service",
+    "sensitivity": "HIGH",
+    "hitl_reason": "Unknown sender (Google automated) + security-sensitive content per Company Handbook HITL thresholds"
+  },
+  "agent": "AI_Employee_v1.0",
+  "iteration": 1
+}

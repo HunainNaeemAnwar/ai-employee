@@ -1,0 +1,5 @@
+{"timestamp": "2026-02-18T00:00:00Z", "task_id": "test_invoice_001", "action": "email_received", "details": {"from": "billing@acmecorp.com", "subject": "Invoice #INV-2026-001 - Payment Due", "type": "invoice"}}
+{"timestamp": "2026-02-18T00:00:00Z", "task_id": "test_invoice_001", "action": "triage_completed", "details": {"category": "invoice", "priority": "medium", "autonomy_level": "HITL_required"}}
+{"timestamp": "2026-02-18T00:00:00Z", "task_id": "test_invoice_001", "action": "data_extracted", "details": {"invoice_number": "INV-2026-001", "vendor": "Acme Corp", "amount": 5000.00, "due_date": "2026-02-28"}}
+{"timestamp": "2026-02-18T00:00:00Z", "task_id": "test_invoice_001", "action": "moved_to_pending_approval", "details": {"destination": "PROCESSING/Pending_Approval/test_invoice_001.json", "hitl_reason": "Payment/invoice requires human approval"}}
+{"timestamp": "2026-02-18T01:35:00Z", "task_id": "email_19c6ba17bdab4e7e", "action": "email_triaged", "details": {"category": "informational", "priority": "low", "autonomy_level": "auto_approve", "from": "Google <no-reply @accounts.google.com>", "subject": "Security alert", "action_required": false}}
