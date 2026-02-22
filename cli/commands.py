@@ -257,6 +257,26 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
 
     print(f"\n📋 Processing task: {task.id} (type: {task.type})")
     
+    # Auto-skip promotional and no-reply emails (no approval needed)
+    no_reply_patterns = ['no-reply', 'noreply', 'donotreply', 'newsletter', 'notifications', 'updates']
+    is_no_reply = any(p in task.sender.lower() for p in no_reply_patterns)
+    is_promotional = task.type == 'promotional'
+    
+    if is_no_reply or is_promotional:
+        print(f"   ⏭️ Auto-skipped (type: {task.type}, sender: {task.sender})")
+        # Mark email as read
+        email_id = task.data.get('email_id')
+        if email_id:
+            try:
+                email_mcp.mark_as_read(email_id)
+                print(f"   ✅ Marked email as read")
+            except Exception as e:
+                print(f"   ⚠️ Could not mark as read: {e}")
+        # Complete task without approval
+        state_manager.complete_task(task.id, f"Auto-skipped ({task.type})")
+        print(f"   📁 Moved to: OUTPUT/Completed/ (auto-skipped)")
+        return
+    
     # Mark email as read when claimed (user has seen it by moving to Pending/)
     email_id = task.data.get('email_id')
     if email_id:
