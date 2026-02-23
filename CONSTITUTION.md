@@ -252,42 +252,48 @@ ODOO_PASSWORD=...
 **Must Have:**
 - ✅ Gmail Watcher (poll every 2 min)
 - ✅ Ralph Wiggum Loop (external orchestrator)
-- ✅ At least 1 MCP server (Email MCP)
+- ✅ MCP Server Framework (`mcp_servers/base_mcp.py`)
+- ✅ StateMCP (Bronze) - Read/write vault state
+- ✅ EmailMCP (Bronze) - Send emails via Gmail API
 - ✅ HITL approval workflow (file-based)
 - ✅ Obsidian vault with root-level handbook
 - ✅ State persistence (JSON files)
 - ✅ Audit logging (JSONL)
+- ✅ Rate limiting (10 emails/hour)
 
 **Success Criteria:**
-- New email → Watcher detects → Qwen drafts → HITL approval → Email sent
+- New email → Watcher detects → Qwen drafts → HITL approval → EmailMCP sends
 - Ralph Loop handles multi-step tasks
-- All actions logged
+- All actions logged via MCP audit_log()
+- Rate limiting enforced
 
 ### Section 4.2: Silver Tier
 
 **Must Have (all Bronze +):**
 - ✅ WhatsApp Watcher (Playwright, 30 sec poll)
-- ✅ WhatsApp MCP (LOCAL ONLY, HITL always)
-- ✅ LinkedIn MCP (auto-posting)
+- ✅ BrowserMCP (Silver) - Browser automation
+- ✅ WhatsAppMCP (Silver) - WhatsApp Web automation (LOCAL ONLY, HITL always)
 - ✅ Scheduled jobs (CEO Briefing @ Mon 7 AM)
 - ✅ Circuit breakers (error recovery)
-- ✅ Rate limiting (10 emails/hour)
+- ✅ Rate limiting per MCP (10 emails/hour, 60 browser actions/hour, 20 WhatsApp msgs/hour)
 
 **Success Criteria:**
-- WhatsApp message → Always requires approval
+- WhatsApp message → WhatsAppMCP detects → ALWAYS requires approval
+- BrowserMCP automates web interactions with HITL for login/payment pages
 - CEO Briefing generates automatically
 - System recovers from transient errors
+- Rate limits enforced per MCP
 
 ### Section 4.3: Gold Tier
 
 **Must Have (all Silver +):**
 - ✅ Finance Watcher (bank CSV/API, daily sync)
-- ✅ Odoo MCP (invoice generation, accounting)
-- ✅ Twitter/X MCP
-- ✅ Instagram MCP
+- ✅ OdooMCP (Gold) - Invoice generation, accounting (ALWAYS HITL for financial postings)
+- ✅ SocialMCP (Gold) - LinkedIn, Twitter/X, Instagram posting
 - ✅ CEO Briefing Generator (comprehensive report)
 - ✅ Hash chain audit logs (tamper-evident)
 - ✅ SQLite migration (concurrent access)
+- ✅ Rate limiting (50 Odoo calls/hour, 5 social posts/hour/platform)
 
 **Success Criteria:**
 - Bank transactions synced daily

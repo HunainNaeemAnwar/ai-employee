@@ -116,14 +116,29 @@ A **Digital FTE (Full-Time Equivalent)** - an AI agent that autonomously manages
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                   ACTION LAYER (MCP Servers)                │
-│  ┌────────────┐  ┌────────────┐  ┌────────────┐            │
-│  │Email MCP   │  │Browser MCP │  │WhatsApp MCP│            │
-│  │(SMTP/IMAP) │  │(Playwright)│  │(Playwright)│            │
-│  └────────────┘  └────────────┘  └────────────┘            │
-│                                                             │
-│  HITL Check:                                                │
-│  - Auto-approve: Known contacts, <1000 chars               │
-│  - Require approval: Payments, WhatsApp, new payees        │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  mcp_servers/                                         │  │
+│  │  ├── base_mcp.py          # BaseMCP class            │  │
+│  │  ├── email_mcp.py         # EmailMCP (Bronze)        │  │
+│  │  ├── state_mcp.py         # StateMCP (Bronze)        │  │
+│  │  ├── browser_mcp.py       # BrowserMCP (Silver)      │  │
+│  │  ├── whatsapp_mcp.py      # WhatsAppMCP (Silver)     │  │
+│  │  ├── odoo_mcp.py          # OdooMCP (Gold)           │  │
+│  │  ├── social_mcp.py        # SocialMCP (Gold)         │  │
+│  │  └── sync_mcp.py          # SyncMCP (Platinum)       │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                                                              │
+│  BaseMCP Pattern:                                           │
+│  - validate(action) → ValidationResult                      │
+│  - execute(action) → ExecutionResult                        │
+│  - audit_log(action, result) → dict                         │
+│                                                              │
+│  Security Features:                                         │
+│  - Rate limiting (per MCP)                                  │
+│  - HITL enforcement                                         │
+│  - Audit logging                                            │
+│  - Secret isolation                                         │
 └─────────────────────────────────────────────────────────────┘
                      │
                      ▼
@@ -1595,13 +1610,181 @@ def write_atomic(filepath: str, content: str) -> None:
 
 ---
 
-## 🎯 Next Steps
+## 🎯 MCP SERVER SPECIFICATIONS
 
-1. **Review this architecture** - Confirm all design decisions
-2. **Start Bronze Phase** - Create vault structure and core components
-3. **Test end-to-end** - Gmail watcher → Qwen → State update → Email sent
-4. **Iterate** - Add WhatsApp, HITL, scheduling in Silver phase
+### Overview
+
+**7 MCP (Model Context Protocol) Servers** as Python modules imported by the orchestrator.
+
+### Base Framework
+
+**File:** `mcp_servers/base_mcp.py`
+
+```python
+from dataclasses import dataclass
+from typing import Optional
+from datetime import datetime
+
+@dataclass
+class ValidationResult:
+    success: bool
+    error: Optional[str] = None
+
+@dataclass
+class ExecutionResult:
+    success: bool
+    output: Optional[str] = None
+    error: Optional[str] = None
+
+class BaseMCP:
+    """Base class for all MCP servers"""
+    
+    def __init__(self, vault_path: str):
+        self.vault_path = vault_path
+    
+    def validate(self, action: dict) -> ValidationResult:
+        """Check if action can be executed. Override in subclass."""
+        raise NotImplementedError
+    
+    def execute(self, action: dict) -> ExecutionResult:
+        """Perform the action. Override in subclass."""
+        raise NotImplementedError
+    
+    def audit_log(self, action: dict, result: ExecutionResult) -> dict:
+        """Generate audit log entry"""
+        return {
+            "timestamp": datetime.now().isoformat(),
+            "mcp": self.__class__.__name__,
+            "action": action,
+            "result": {
+                "success": result.success,
+                "output": result.output,
+                "error": result.error
+            }
+        }
+```
+
+### MCP Server Tiers
+
+| MCP Server | Tier | File | Purpose |
+|------------|------|------|---------|
+| **StateMCP** | Bronze | `state_mcp.py` | Read/write vault state files |
+| **EmailMCP** | Bronze | `email_mcp.py` | Send emails via Gmail API |
+| **BrowserMCP** | Silver | `browser_mcp.py` | Browser automation (Playwright) |
+| **WhatsAppMCP** | Silver | `whatsapp_mcp.py` | WhatsApp Web automation |
+| **OdooMCP** | Gold | `odoo_mcp.py` | Odoo ERP integration |
+| **SocialMCP** | Gold | `social_mcp.py` | Social media posting |
+| **SyncMCP** | Platinum | `sync_mcp.py` | Cloud-local vault sync |
+
+### Security Requirements (All MCPs)
+
+| Requirement | Implementation |
+|-------------|----------------|
+| **Rate Limiting** | Track counts per hour, reset hourly |
+| **HITL Enforcement** | Check `action['hitl_approved']` before sensitive actions |
+| **Audit Logging** | Call `self.audit_log()` after every execution |
+| **Secret Isolation** | Load from `SECURITY/.env`, never log secrets |
+| **Error Handling** | Catch exceptions, return `ExecutionResult(success=False, error=str(e))` |
+
+### HITL Check Pattern
+
+```python
+def validate(self, action: dict) -> ValidationResult:
+    # Check if HITL required
+    if self._requires_hitl(action):
+        if not action.get('hitl_approved'):
+            return ValidationResult(
+                success=False,
+                error="HITL approval required. Move approval file to Approved/ folder."
+            )
+    
+    # Check rate limit
+    if self._rate_limit_exceeded():
+        return ValidationResult(
+            success=False,
+            error=f"Rate limit exceeded: {self.rate_limit}/hour"
+        )
+    
+    return ValidationResult(success=True)
+```
+
+### EmailMCP Specification (Bronze)
+
+**Actions:** `send_email`, `draft_email`, `search_emails`  
+**Rate Limit:** 10 emails/hour  
+**HITL:** Required for unknown recipients, payment-related, contains links  
+**Dependencies:** `google-api-python-client`
+
+### StateMCP Specification (Bronze)
+
+**Actions:** `read_file`, `write_file`, `move_file`, `list_directory`  
+**Validation:** Cannot write to `SECURITY/`, atomic writes required  
+**Dependencies:** None (pure Python)
+
+### BrowserMCP Specification (Silver)
+
+**Actions:** `navigate`, `click`, `fill_form`, `screenshot`, `get_text`  
+**HITL:** Required for payment pages, login pages  
+**Rate Limit:** 60 actions/hour  
+**Dependencies:** `playwright`
+
+### WhatsAppMCP Specification (Silver)
+
+**Actions:** `send_message`, `read_chat`, `scan_qr`  
+**HITL:** ALWAYS required (privacy policy)  
+**LOCAL ONLY:** Never run on cloud  
+**Dependencies:** `playwright`
+
+### OdooMCP Specification (Gold)
+
+**Actions:** `create_invoice`, `record_payment`, `get_report`, `reconcile`  
+**HITL:** ALWAYS required for financial postings  
+**Rate Limit:** 50 API calls/hour  
+**Dependencies:** `requests`
+
+### SocialMCP Specification (Gold)
+
+**Actions:** `post_linkedin`, `post_twitter`, `post_instagram`, `schedule_post`  
+**HITL:** Required for all posts  
+**Rate Limit:** 5 posts/hour per platform  
+**Dependencies:** `requests`
+
+### SyncMCP Specification (Platinum)
+
+**Actions:** `sync_vault`, `resolve_conflict`, `health_check`  
+**Validation:** Never sync `SECURITY/`, Git-based only  
+**Dependencies:** `gitpython`
+
+### Testing Pattern
+
+```python
+def test_email_mcp():
+    mcp = EmailMCP("/path/to/vault")
+    
+    # Test validation
+    action = {"to": "test@example.com", "subject": "Test"}
+    result = mcp.validate(action)
+    assert result.success
+    
+    # Test execution
+    result = mcp.execute(action)
+    assert result.success or result.error
+    
+    # Test audit log
+    log = mcp.audit_log(action, result)
+    assert "timestamp" in log
+```
 
 ---
 
-**Architecture complete. Ready to implement?**
+## 🎯 Next Steps
+
+1. **Review this architecture** - Confirm all design decisions
+2. **Implement MCP Framework** - Create `mcp_servers/base_mcp.py`
+3. **Build Bronze MCPs** - StateMCP + EmailMCP
+4. **Test end-to-end** - Gmail watcher → Qwen → MCP execution
+5. **Iterate** - Add Silver/Gold MCPs in subsequent phases
+
+---
+
+**Architecture complete. Ready to implement MCP framework?**

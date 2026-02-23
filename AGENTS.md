@@ -193,6 +193,81 @@ cat SYSTEM/state/current_task.json
 
 ---
 
+## 🤖 MCP SERVER USAGE GUIDE
+
+### Overview
+
+MCP (Model Context Protocol) servers are Python modules that execute actions validated by the orchestrator.
+
+### MCP Framework Pattern
+
+```python
+from mcp_servers.base_mcp import BaseMCP, ValidationResult, ExecutionResult
+
+class EmailMCP(BaseMCP):
+    def validate(self, action: dict) -> ValidationResult:
+        # Check rate limits, HITL approval, parameters
+        return ValidationResult(success=True)
+    
+    def execute(self, action: dict) -> ExecutionResult:
+        # Perform the action
+        return ExecutionResult(success=True, output="Email sent")
+```
+
+### Using MCPs in Orchestrator
+
+```python
+from mcp_servers.email_mcp import EmailMCP
+
+# Initialize MCP
+email_mcp = EmailMCP(vault_path="/path/to/vault")
+
+# Validate action
+action = {"to": "client@example.com", "subject": "Update", "body": "..."}
+result = email_mcp.validate(action)
+
+if result.success:
+    # Execute action
+    result = email_mcp.execute(action)
+    
+    # Audit log
+    log_entry = email_mcp.audit_log(action, result)
+```
+
+### HITL Approval with MCPs
+
+```python
+# Check if HITL required
+if mcp._requires_hitl(action):
+    if not action.get('hitl_approved'):
+        # Create approval request
+        approval_id = state_manager.request_approval(task, reason="...")
+        # Wait for user to move file to Approved/
+```
+
+### Rate Limiting
+
+Each MCP enforces rate limits:
+
+| MCP | Rate Limit |
+|-----|------------|
+| EmailMCP | 10 emails/hour |
+| BrowserMCP | 60 actions/hour |
+| WhatsAppMCP | 20 messages/hour |
+| OdooMCP | 50 API calls/hour |
+| SocialMCP | 5 posts/hour/platform |
+
+### Available MCPs by Tier
+
+| Tier | MCPs |
+|------|------|
+| **Bronze** | StateMCP, EmailMCP |
+| **Silver** | + BrowserMCP, WhatsAppMCP |
+| **Gold** | + OdooMCP, SocialMCP |
+| **Platinum** | + SyncMCP |
+
+---
+
 ## 🔄 RALPH LOOP WORKFLOW
 
 ### What is Ralph Loop?
