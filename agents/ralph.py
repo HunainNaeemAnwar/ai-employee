@@ -109,6 +109,13 @@ class RalphLoop:
                 
                 # Debug: Show prompt preview
                 print(f"\n   📝 Prompt size: {len(prompt_content)} chars")
+                
+                # Truncate prompt if too large (prevents Qwen hangs)
+                max_prompt_size = 3000
+                if len(prompt_content) > max_prompt_size:
+                    print(f"   ⚠️ Truncating large prompt ({len(prompt_content)} → {max_prompt_size} chars)")
+                    prompt_content = prompt_content[:max_prompt_size] + '\n\n[Content truncated for brevity]'
+                
                 if len(prompt_content) < 100:
                     print(f"   📝 Prompt content: {prompt_content[:200]}")
                 else:
@@ -120,14 +127,16 @@ class RalphLoop:
 
                 # Use qwen with positional prompt (non-interactive mode)
                 # Add -y flag to auto-accept (skip interactive confirmations)
+                # Add -i flag for interactive mode (better for single prompts)
+                # Add -o text for plain text output (easier to parse)
                 max_retries = 2
                 for attempt in range(max_retries):
                     try:
                         result = subprocess.run(
-                            ["qwen", "-y", prompt_content],  # Add -y for YOLO mode
+                            ["qwen", "-y", "-i", "-o", "text", prompt_content],  # Add flags for non-interactive
                             capture_output=True,
                             text=True,
-                            timeout=30,  # Reduced timeout (fail faster)
+                            timeout=20,  # Reduced timeout (fail faster)
                             cwd=str(self.vault_path)
                         )
                         break  # Success, exit retry loop
@@ -319,23 +328,49 @@ BEGIN ITERATION {iteration + 1}:
         """
         Extract draft email from Qwen output.
         
-        Handles multiple output formats.
+        Handles multiple output formats including Qwen's actual output.
         """
         import re
         
-        # Pattern 1: ## DRAFT EMAIL with code blocks
+        # Pattern 1: **Draft Email Response:** (Qwen's default format)
+        pattern = r'\*\*Draft Email Response:\*\*\s*\n\s*```\s*([\s\S]*?)```'
+        match = re.search(pattern, output, re.IGNORECASE)
+        if match:
+            draft = match.group(1).strip()
+            # Remove any "To:" metadata lines
+            draft = re.sub(r'^\*\*To:\*\*.*?\n', '', draft, flags=re.MULTILINE)
+            if draft and len(draft) > 20:
+                return draft
+        
+        # Pattern 2: **Draft:** (shorter version)
+        pattern = r'\*\*Draft:\*\*\s*\n\s*```\s*([\s\S]*?)```'
+        match = re.search(pattern, output, re.IGNORECASE)
+        if match:
+            draft = match.group(1).strip()
+            if draft and len(draft) > 20:
+                return draft
+        
+        # Pattern 3: Any code block after "draft" keyword (case insensitive)
+        pattern = r'[Dd]raft[^`]*?\n\s*```\s*([\s\S]*?)```'
+        match = re.search(pattern, output)
+        if match:
+            draft = match.group(1).strip()
+            if draft and len(draft) > 20:
+                return draft
+        
+        # Pattern 4: ## DRAFT EMAIL with code blocks
         pattern = r'## DRAFT EMAIL\s*```\s*([\s\S]*?)```'
         match = re.search(pattern, output, re.IGNORECASE)
         if match:
             return match.group(1).strip()
         
-        # Pattern 2: ## EMAIL DRAFT
+        # Pattern 5: ## EMAIL DRAFT
         pattern = r'## EMAIL DRAFT\s*```\s*([\s\S]*?)```'
         match = re.search(pattern, output, re.IGNORECASE)
         if match:
             return match.group(1).strip()
         
-        # Pattern 3: Content between --- markers
+        # Pattern 6: Content between --- markers
         pattern = r'---\s*\n([\s\S]*?)\n\s*---'
         match = re.search(pattern, output)
         if match:
@@ -345,13 +380,13 @@ BEGIN ITERATION {iteration + 1}:
             if draft and len(draft) > 20:
                 return draft
         
-        # Pattern 4: Look for email content (starts with Dear/Salutation)
+        # Pattern 7: Look for email content (starts with Dear/Salutation)
         pattern = r'(Dear\s+\w+[,\.]?\s*\n[\s\S]*?)(?:Best regards|Regards|Sincerely|Thanks|Best)[\s\S]*$'
         match = re.search(pattern, output, re.IGNORECASE)
         if match:
             return match.group(1).strip()
         
-        # Pattern 5: If output contains email-like content, return it
+        # Pattern 8: If output contains email-like content, extract it
         if any(kw in output.lower() for kw in ['dear ', 'best regards', 'sincerely']):
             # Clean up the output
             lines = output.split('\n')

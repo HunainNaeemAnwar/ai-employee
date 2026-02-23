@@ -1,0 +1,25 @@
+{
+  "id": "GmailWatcher_ecc7a3e6",
+  "source": "GmailWatcher",
+  "timestamp": "2026-02-23T20:40:53.065082",
+  "type": "general",
+  "priority": "low",
+  "data": {
+    "email_id": "19c8b28ff01522fd",
+    "thread_id": "19c8b28ff01522fd",
+    "labels": [
+      "UNREAD",
+      "IMPORTANT",
+      "CATEGORY_PERSONAL",
+      "INBOX"
+    ],
+    "received_at": "2026-02-23T20:40:33",
+    "from": "Hunain Naeem Anwar <hunainnaeemanwar@gmail.com>",
+    "subject": "to test ai employee",
+    "to": "arhaamkhan125@gmail.com",
+    "body": "Hi AI Employee,\r\n\r\nThis is a test email to verify the system is working correctly.\r\nPlease confirm receipt.\r\n\r\n Best regards,\r\n Test User\r\n",
+    "has_attachments": false
+  },
+  "status": "new",
+  "hitl_required": true
+}
