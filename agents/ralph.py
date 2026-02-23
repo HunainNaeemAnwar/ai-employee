@@ -113,11 +113,10 @@ class RalphLoop:
                 else:
                     print(f"\n   📝 Prompt preview: {prompt_content[:100]}...[truncated]")
 
-                # Try using qwen with positional prompt (pipe content to stdin)
-                # Note: Qwen CLI v0.10+ doesn't support --file flag, use stdin instead
+                # Use qwen with positional prompt (non-interactive mode)
+                # Note: Piping to qwen causes timeout, use positional argument instead
                 result = subprocess.run(
-                    ["qwen"],
-                    input=prompt_content,
+                    ["qwen", prompt_content],
                     capture_output=True,
                     text=True,
                     timeout=self.ITERATION_TIMEOUT,
