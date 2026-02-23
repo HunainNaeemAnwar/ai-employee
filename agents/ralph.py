@@ -237,15 +237,64 @@ BEGIN ITERATION {iteration + 1}:
     def _extract_draft(self, output: str) -> Optional[str]:
         """Extract draft email from Qwen output."""
         import re
-        
+
         # Look for ## DRAFT EMAIL pattern
         pattern = r'## DRAFT EMAIL\s*```\s*([\s\S]*?)```'
         match = re.search(pattern, output, re.IGNORECASE)
-        
+
         if match:
             return match.group(1).strip()
-        
+
         return None
+    
+    def create_plan_file(self, task: 'Task', draft: str) -> 'Path':
+        """
+        Create Plan.md file to track progress.
+        
+        Args:
+            task: Task being processed
+            draft: Draft content from Qwen
+        
+        Returns:
+            Path to created Plan.md file
+        """
+        from pathlib import Path
+        
+        plans_folder = Path(self.vault_path) / "PROCESSING" / "Plans"
+        plans_folder.mkdir(parents=True, exist_ok=True)
+        
+        plan_file = plans_folder / f"PLAN_{task.id}.md"
+        
+        content = f"""---
+task_id: {task.id}
+created: {datetime.now().isoformat()}
+status: pending_approval
+objective: Process {task.type} from {task.sender}
+---
+
+## Objective
+Process {task.type} email from {task.sender}
+
+## Steps
+- [x] Read email
+- [x] Categorize email
+- [x] Draft reply
+- [ ] Send email (requires approval)
+- [ ] Log transaction
+
+## Approval Required
+Email send requires human approval. See Pending_Approval/
+
+## Draft Content
+```
+{draft[:500]}{'...' if len(draft) > 500 else ''}
+```
+
+## Notes
+Draft created by Ralph Loop in {task.iteration if hasattr(task, 'iteration') else 1} iterations
+"""
+        write_atomic(str(plan_file), content)
+        return plan_file
     
     def _cleanup(self) -> None:
         """Clean up temporary files."""

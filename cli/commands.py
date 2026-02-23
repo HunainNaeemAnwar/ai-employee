@@ -292,13 +292,20 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
 
     if result.success:
         print(f"✅ Ralph Loop completed in {result.iterations} iterations")
-        
+
         # Extract draft from Qwen output
         draft_content = _extract_draft_from_output(result.output)
-        
+
         if draft_content:
             print(f"📝 Draft created ({len(draft_content)} chars)")
             
+            # Create Plan.md file
+            try:
+                plan_file = ralph_loop.create_plan_file(task, draft_content)
+                print(f"📋 Plan created: {plan_file.name}")
+            except Exception as e:
+                print(f"⚠️ Could not create Plan.md: {e}")
+
             # Create approval request
             approval_id = _create_approval_request(
                 task=task,
@@ -311,7 +318,7 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
             # No draft - task might be categorization only
             print(f"⚠️ No draft created - task may be categorization only")
             state_manager.complete_task(task.id, "Categorized")
-    
+
     elif result.error:
         print(f"❌ Ralph Loop failed: {result.error}")
         state_manager.fail_task(task.id, result.error)
