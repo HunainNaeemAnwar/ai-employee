@@ -75,6 +75,18 @@ class RalphLoop:
         start_time = time.time()
 
         print(f"   ⏱️ Starting Ralph Loop (max {self.max_iterations} iterations, {self.ITERATION_TIMEOUT}s timeout)")
+        
+        # Debug: Check Qwen CLI
+        import shutil
+        qwen_path = shutil.which(self.qwen_cmd)
+        print(f"   🔍 Qwen CLI path: {qwen_path}")
+        if not qwen_path:
+            print(f"   ❌ ERROR: Qwen CLI '{self.qwen_cmd}' not found in PATH")
+            return TaskResult(
+                success=False,
+                error=f"Qwen CLI not found: {self.qwen_cmd}. Install with: npm install -g @anthropic/claude-code",
+                iterations=0
+            )
 
         while iteration < self.max_iterations:
             # Build prompt
@@ -83,38 +95,59 @@ class RalphLoop:
             iter_time = 0
 
             try:
-                # Run Qwen CLI
+                # Debug: Check prompt file
                 print(f"   🔄 Iteration {iteration + 1}/{self.max_iterations}... ", end='', flush=True)
-
+                print(f"(prompt: {prompt_path.name}, size: {prompt_path.stat().st_size if prompt_path.exists() else 0} bytes)")
+                
+                if not prompt_path.exists():
+                    print(f"\n   ❌ ERROR: Prompt file not created: {prompt_path}")
+                    iteration += 1
+                    continue
+                
                 with open(prompt_path, 'r') as f:
                     prompt_content = f.read()
+                
+                # Debug: Show prompt preview
+                if len(prompt_content) < 100:
+                    print(f"\n   📝 Prompt content: {prompt_content[:200]}")
+                else:
+                    print(f"\n   📝 Prompt preview: {prompt_content[:100]}...[truncated]")
 
-                # Try using prompt file directly with qwen --file
+                # Try using qwen with positional prompt (pipe content to stdin)
+                # Note: Qwen CLI v0.10+ doesn't support --file flag, use stdin instead
                 result = subprocess.run(
-                    ["qwen", "--file", prompt_path, "--cwd", str(self.vault_path)],
+                    ["qwen"],
+                    input=prompt_content,
                     capture_output=True,
                     text=True,
-                    timeout=self.ITERATION_TIMEOUT
+                    timeout=self.ITERATION_TIMEOUT,
+                    cwd=str(self.vault_path)
                 )
+                
+                # Debug: Show return code and stderr
+                if result.returncode != 0:
+                    print(f"\n   ❌ Qwen exited with code {result.returncode}")
+                    if result.stderr:
+                        print(f"   ❌ Qwen stderr: {result.stderr[:500]}")
 
                 iter_time = time.time() - iter_start
-                print(f"done ({iter_time:.1f}s)")
-                
+                print(f" done ({iter_time:.1f}s)")
+
                 # Debug: Show first part of Qwen's output
                 if result.stdout:
                     print(f"   📝 Qwen output: {len(result.stdout)} chars")
-                    
+
                     # Show first 200 chars for debugging
                     if len(result.stdout) < 500:
                         print(f"   📄 Output preview: {result.stdout[:200]}...")
                     else:
                         print(f"   📄 Output preview: {result.stdout[:200]}...[truncated]")
-                    
+
                     # Check for ANY content as progress
                     if len(result.stdout.strip()) > 10:
                         no_progress_count = 0  # Any output = progress
                         last_state_hash = "has_output"  # Mark as changed
-                    
+
                     # Check completion signals (expanded patterns)
                     completion_found = False
                     for signal in self.COMPLETION_SIGNALS:
