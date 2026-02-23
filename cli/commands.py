@@ -357,6 +357,9 @@ def _extract_draft_from_output(output: str) -> str:
         # Remove header lines like "**DRAFT EMAIL RESPONSE**"
         draft = re.sub(r'^\*\*DRAFT EMAIL RESPONSE\*\*\s*\n', '', draft, flags=re.IGNORECASE | re.MULTILINE)
         
+        # Remove metadata lines (**To:**, **From:**, **Subject:**)
+        draft = re.sub(r'^\*\*(To|From|Subject):\*\*.*?\n', '', draft, flags=re.MULTILINE | re.IGNORECASE)
+        
         # Remove lines that are just markdown headers (not part of email body)
         lines = draft.split('\n')
         clean_lines = []
