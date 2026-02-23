@@ -79,19 +79,18 @@ class RalphLoop:
             try:
                 # Run Qwen CLI
                 print(f"   🔄 Iteration {iteration + 1}/{self.max_iterations}... ", end='', flush=True)
-                
+
                 with open(prompt_path, 'r') as f:
                     prompt_content = f.read()
 
+                # Try using prompt file directly with qwen --file
                 result = subprocess.run(
-                    [self.qwen_cmd],
-                    input=prompt_content,
+                    ["qwen", "--file", prompt_path, "--cwd", str(self.vault_path)],
                     capture_output=True,
                     text=True,
-                    timeout=self.ITERATION_TIMEOUT,
-                    cwd=str(self.vault_path)
+                    timeout=self.ITERATION_TIMEOUT
                 )
-                
+
                 iter_time = time.time() - iter_start
                 print(f"done ({iter_time:.1f}s)")
                 
