@@ -108,20 +108,36 @@ class RalphLoop:
                     prompt_content = f.read()
                 
                 # Debug: Show prompt preview
+                print(f"\n   📝 Prompt size: {len(prompt_content)} chars")
                 if len(prompt_content) < 100:
-                    print(f"\n   📝 Prompt content: {prompt_content[:200]}")
+                    print(f"   📝 Prompt content: {prompt_content[:200]}")
                 else:
-                    print(f"\n   📝 Prompt preview: {prompt_content[:100]}...[truncated]")
+                    print(f"   📝 Prompt preview: {prompt_content[:100]}...[truncated]")
+                
+                # Warn if prompt is very large
+                if len(prompt_content) > 2000:
+                    print(f"   ⚠️ Large prompt ({len(prompt_content)} chars) may cause timeout")
 
                 # Use qwen with positional prompt (non-interactive mode)
-                # Note: Piping to qwen causes timeout, use positional argument instead
-                result = subprocess.run(
-                    ["qwen", prompt_content],
-                    capture_output=True,
-                    text=True,
-                    timeout=self.ITERATION_TIMEOUT,
-                    cwd=str(self.vault_path)
-                )
+                # Add -y flag to auto-accept (skip interactive confirmations)
+                max_retries = 2
+                for attempt in range(max_retries):
+                    try:
+                        result = subprocess.run(
+                            ["qwen", "-y", prompt_content],  # Add -y for YOLO mode
+                            capture_output=True,
+                            text=True,
+                            timeout=30,  # Reduced timeout (fail faster)
+                            cwd=str(self.vault_path)
+                        )
+                        break  # Success, exit retry loop
+                    except subprocess.TimeoutExpired:
+                        if attempt < max_retries - 1:
+                            print(f"\n   ⏱️ Timeout on attempt {attempt + 1}, retrying...")
+                            continue
+                        else:
+                            print(f"\n   ❌ Timeout after {max_retries} attempts")
+                            raise
                 
                 # Debug: Show return code and stderr
                 if result.returncode != 0:

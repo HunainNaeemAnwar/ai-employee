@@ -1,8 +1,8 @@
 # AI Employee - Iteration 1
 
 ## CURRENT STATE
-- Task ID: GmailWatcher_9dd77fcf
-- Type: general
+- Task ID: GmailWatcher_f05ad8b4
+- Type: urgent
 - Priority: low
 
 ## YOUR TASK
