@@ -103,25 +103,58 @@ class RalphLoop:
                 # Debug: Show first part of Qwen's output
                 if result.stdout:
                     print(f"   📝 Qwen output: {len(result.stdout)} chars")
+                    
+                    # Show first 200 chars for debugging
+                    if len(result.stdout) < 500:
+                        print(f"   📄 Output preview: {result.stdout[:200]}...")
+                    else:
+                        print(f"   📄 Output preview: {result.stdout[:200]}...[truncated]")
+                    
                     # Check for ANY content as progress
                     if len(result.stdout.strip()) > 10:
                         no_progress_count = 0  # Any output = progress
                         last_state_hash = "has_output"  # Mark as changed
                     
-                    # Check completion signals
+                    # Check completion signals (expanded patterns)
+                    completion_found = False
                     for signal in self.COMPLETION_SIGNALS:
                         if signal in result.stdout:
-                            draft = self._extract_draft(result.stdout)
-                            if draft:
-                                task.draft_content = draft
-                            self._cleanup()
-                            total_time = time.time() - start_time
-                            print(f"   ✅ Ralph Loop completed in {total_time:.1f}s ({iteration + 1} iterations)")
-                            return TaskResult(
-                                success=True,
-                                output=result.stdout,
-                                iterations=iteration + 1
-                            )
+                            completion_found = True
+                            break
+                    
+                    # Also check for draft patterns
+                    if not completion_found:
+                        draft_patterns = [
+                            '## DRAFT EMAIL',
+                            '## EMAIL DRAFT',
+                            'Draft Email',
+                            'draft email',
+                            'Dear ',
+                            'Best regards',
+                            'Sincerely',
+                            'TASK_COMPLETE',
+                            'task complete'
+                        ]
+                        for pattern in draft_patterns:
+                            if pattern in result.stdout:
+                                completion_found = True
+                                print(f"   ✅ Found completion pattern: '{pattern}'")
+                                break
+                    
+                    if completion_found:
+                        draft = self._extract_draft(result.stdout)
+                        if draft:
+                            task.draft_content = draft
+                        self._cleanup()
+                        total_time = time.time() - start_time
+                        print(f"   ✅ Ralph Loop completed in {total_time:.1f}s ({iteration + 1} iterations)")
+                        return TaskResult(
+                            success=True,
+                            output=result.stdout,
+                            iterations=iteration + 1
+                        )
+                    else:
+                        print(f"   ⚠️ No completion signal found in output")
                 
                 # Check progress
                 current_hash = self._hash_state_file()
@@ -235,16 +268,58 @@ BEGIN ITERATION {iteration + 1}:
             return hashlib.md5(f.read()).hexdigest()
     
     def _extract_draft(self, output: str) -> Optional[str]:
-        """Extract draft email from Qwen output."""
+        """
+        Extract draft email from Qwen output.
+        
+        Handles multiple output formats.
+        """
         import re
-
-        # Look for ## DRAFT EMAIL pattern
+        
+        # Pattern 1: ## DRAFT EMAIL with code blocks
         pattern = r'## DRAFT EMAIL\s*```\s*([\s\S]*?)```'
         match = re.search(pattern, output, re.IGNORECASE)
-
         if match:
             return match.group(1).strip()
-
+        
+        # Pattern 2: ## EMAIL DRAFT
+        pattern = r'## EMAIL DRAFT\s*```\s*([\s\S]*?)```'
+        match = re.search(pattern, output, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        
+        # Pattern 3: Content between --- markers
+        pattern = r'---\s*\n([\s\S]*?)\n\s*---'
+        match = re.search(pattern, output)
+        if match:
+            draft = match.group(1).strip()
+            # Remove metadata lines
+            draft = re.sub(r'^\*\*(To|From|Subject):\*\*.*?\n', '', draft, flags=re.MULTILINE)
+            if draft and len(draft) > 20:
+                return draft
+        
+        # Pattern 4: Look for email content (starts with Dear/Salutation)
+        pattern = r'(Dear\s+\w+[,\.]?\s*\n[\s\S]*?)(?:Best regards|Regards|Sincerely|Thanks|Best)[\s\S]*$'
+        match = re.search(pattern, output, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        
+        # Pattern 5: If output contains email-like content, return it
+        if any(kw in output.lower() for kw in ['dear ', 'best regards', 'sincerely']):
+            # Clean up the output
+            lines = output.split('\n')
+            email_lines = []
+            in_email = False
+            for line in lines:
+                if 'dear ' in line.lower() or in_email:
+                    in_email = True
+                    email_lines.append(line)
+                if 'best regards' in line.lower() or 'sincerely' in line.lower():
+                    email_lines.append(line)
+                    break
+            
+            if email_lines:
+                return '\n'.join(email_lines).strip()
+        
         return None
     
     def create_plan_file(self, task: 'Task', draft: str) -> 'Path':
