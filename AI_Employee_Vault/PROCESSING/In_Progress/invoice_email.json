@@ -1,0 +1,16 @@
+{
+  "email_id": "test_invoice_001",
+  "from": "billing@acmecorp.com",
+  "to": "you@yourcompany.com",
+  "subject": "Invoice #INV-2026-001 - Payment Due",
+  "body": "Dear Valued Client,\n\nPlease find attached invoice #INV-2026-001 for services rendered in January 2026.\n\nAmount Due: $5,000.00\nDue Date: February 28, 2026\n\nPayment can be made via bank transfer or credit card.\n\nBank Details:\n- Account Name: Acme Corp\n- Account Number: 123456789\n- Routing Number: 987654321\n\nIf you have any questions about this invoice, please contact our billing department.\n\nThank you for your business!\n\nBest regards,\nAcme Corp Billing Team\nbilling@acmecorp.com",
+  "labels": ["INBOX", "IMPORTANT"],
+  "received_at": "2026-02-17T10:00:00Z",
+  "has_attachments": true,
+  "attachments": [
+    {
+      "filename": "INV-2026-001.pdf",
+      "size": 52428
+    }
+  ]
+}

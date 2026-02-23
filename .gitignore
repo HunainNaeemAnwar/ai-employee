@@ -54,6 +54,21 @@ AI_Employee_Vault/SECURITY/*.json
 AI_Employee_Vault/SECURITY/whatsapp_session/
 
 # ===========================================
+# Vault State (regenerated)
+# ===========================================
+AI_Employee_Vault/SYSTEM/state/current_task.json
+AI_Employee_Vault/SYSTEM/state/prompt.md
+AI_Employee_Vault/SYSTEM/state/complete.flag
+
+# ===========================================
+# Vault Symlinks (don't track symlinks)
+# ===========================================
+AI_Employee_Vault/Inbox
+AI_Employee_Vault/Needs_Action
+AI_Employee_Vault/Done
+AI_Employee_Vault/Logs
+
+# ===========================================
 # Logs
 # ===========================================
 *.log

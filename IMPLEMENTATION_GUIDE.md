@@ -9,14 +9,96 @@
 ## 📋 TABLE OF CONTENTS
 
 1. [Getting Started](#getting-started)
-2. [Hackathon Tier Roadmap](#hackathon-tier-roadmap)
-3. [Bronze Tier Implementation](#bronze-tier-implementation)
-4. [Silver Tier Implementation](#silver-tier-implementation)
-5. [Gold Tier Implementation](#gold-tier-implementation)
-6. [Platinum Tier Implementation](#platinum-tier-implementation)
-7. [Testing Checklist](#testing-checklist)
-8. [Submission Requirements](#submission-requirements)
-9. [Demo Video Script](#demo-video-script)
+2. [Folder Structure](#folder-structure)
+3. [Hackathon Tier Roadmap](#hackathon-tier-roadmap)
+4. [Bronze Tier Implementation](#bronze-tier-implementation)
+5. [Silver Tier Implementation](#silver-tier-implementation)
+6. [Gold Tier Implementation](#gold-tier-implementation)
+7. [Platinum Tier Implementation](#platinum-tier-implementation)
+8. [Testing Checklist](#testing-checklist)
+9. [Submission Requirements](#submission-requirements)
+10. [Demo Video Script](#demo-video-script)
+
+---
+
+## 📁 FOLDER STRUCTURE
+
+### Hackathon Folder Names (with Symlinks)
+
+Our implementation uses descriptive folder names, but we provide **symlinks** for hackathon compatibility:
+
+| Hackathon Name | Our Implementation | Symlink |
+|----------------|-------------------|---------|
+| `/Inbox` | `INPUT_QUEUES/` | ✅ `Inbox → INPUT_QUEUES` |
+| `/Needs_Action` | `PROCESSING/Pending/` | ✅ `Needs_Action → PROCESSING/Pending` |
+| `/Plans` | `PROCESSING/Plans/` | ✅ Direct match |
+| `/Done` | `OUTPUT/Completed/` | ✅ `Done → OUTPUT/Completed` |
+| `/Pending_Approval` | `PROCESSING/Pending_Approval/` | ✅ Direct match |
+| `/Approved` | `PROCESSING/Approved/` | ✅ Direct match |
+| `/Rejected` | `PROCESSING/Rejected/` | ✅ Direct match |
+| `/Logs` | `SECURITY/audit_logs/` | ✅ `Logs → SECURITY/audit_logs` |
+
+### Setup Symlinks (One-Time Setup)
+
+```bash
+cd AI_Employee_Vault
+
+# Create hackathon-compatible symlinks
+ln -s INPUT_QUEUES Inbox
+ln -s PROCESSING/Pending Needs_Action
+ln -s OUTPUT/Completed Done
+ln -s SECURITY/audit_logs Logs
+
+# Verify
+ls -la
+# Should show:
+# Inbox -> INPUT_QUEUES
+# Needs_Action -> PROCESSING/Pending
+# Done -> OUTPUT/Completed
+# Logs -> SECURITY/audit_logs
+```
+
+### Complete Folder Structure
+
+```
+AI_Employee_Vault/
+├── 📋 Company_Handbook.md          # AI behavior rules (ROOT)
+├── 📋 Business_Goals.md            # KPIs, targets (ROOT)
+├── 📊 Dashboard.md                 # Real-time status (ROOT)
+│
+├── 📥 INPUT_QUEUES/ (symlink: Inbox)
+│   ├── Gmail/                      # Gmail Watcher drops here
+│   ├── WhatsApp/                   # WhatsApp Watcher drops here
+│   ├── Banking/                    # Finance Watcher drops here
+│   └── Files/                      # File system drops here
+│
+├── 🔄 PROCESSING/
+│   ├── Pending/ (symlink: Needs_Action)
+│   ├── In_Progress/                # Currently being worked on
+│   ├── Plans/                      # Plan.md files
+│   ├── Pending_Approval/           # HITL queue
+│   ├── Approved/                   # Human-approved
+│   ├── Rejected/                   # Human-rejected
+│   └── Failed/                     # Dead Letter Queue
+│
+├── ✅ OUTPUT/
+│   ├── Completed/ (symlink: Done)
+│   ├── Reports/                    # CEO Briefings
+│   └── Archive/                    # Monthly archival
+│
+├── 🧠 KNOWLEDGE/
+│   ├── Contexts/                   # Client profiles
+│   └── Procedures/                 # Reusable SOPs
+│
+├── 🛡️ SECURITY/
+│   ├── .env                        # API keys (NEVER COMMIT)
+│   └── audit_logs/ (symlink: Logs)
+│
+└── ⚙️ SYSTEM/
+    ├── state/                      # Current task states
+    ├── config/                     # Configurations
+    └── logs/                       # Error logs
+```
 
 ---
 
