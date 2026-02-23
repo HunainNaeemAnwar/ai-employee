@@ -154,27 +154,40 @@ A **Digital FTE (Full-Time Equivalent)** - an AI agent that autonomously manages
 
 ## 📁 Folder Structure
 
+### Hackathon Folder Mapping
+
+| Hackathon Name | Our Implementation | Purpose |
+|----------------|-------------------|---------|
+| `/Inbox` | `INPUT_QUEUES/` | New items land here |
+| `/Needs_Action` | `PROCESSING/Pending/` | Tasks waiting to be processed |
+| `/Plans` | `PROCESSING/Plans/` | Generated execution plans |
+| `/Done` | `OUTPUT/Completed/` | Finished tasks |
+| `/Pending_Approval` | `PROCESSING/Pending_Approval/` | HITL queue |
+| `/Approved` | `PROCESSING/Approved/` | Human-approved actions |
+| `/Rejected` | `PROCESSING/Rejected/` | Human-rejected actions |
+| `/Logs` | `SECURITY/audit_logs/` | Audit logs |
+
 ```
 AI_Employee_Vault/
 ├── 📋 Company_Handbook.md          # AI behavior rules, autonomy levels (ROOT LEVEL)
 ├── 📋 Business_Goals.md            # KPIs, targets, metrics (ROOT LEVEL)
 │
-├── 📥 INPUT_QUEUES/
+├── 📥 INPUT_QUEUES/ (Hackathon: /Inbox)
 │   ├── Gmail/                      # Gmail Watcher drops action files here
 │   ├── WhatsApp/                   # WhatsApp Watcher drops action files here
 │   ├── Banking/                    # Finance Watcher drops transaction files
 │   └── Files/                      # File system drop folder
 │
-├── 🔄 PROCESSING/
+├── 🔄 PROCESSING/ (Hackathon: /Needs_Action → /Plans → /Done)
 │   ├── Pending/                    # Tasks waiting to be claimed
 │   ├── In_Progress/                # Currently being worked on
-│   ├── Plans/                      # Generated execution plans
+│   ├── Plans/                      # Generated execution plans (Plan.md files)
 │   ├── Pending_Approval/           # HITL queue (sensitive actions)
 │   ├── Approved/                   # Human-approved actions ready to execute
 │   ├── Rejected/                   # Human-rejected actions
 │   └── Failed/                     # Dead Letter Queue
 │
-├── ✅ OUTPUT/
+├── ✅ OUTPUT/ (Hackathon: /Done)
 │   ├── Completed/                  # Finished tasks (archived here)
 │   ├── Reports/                    # CEO Briefings, weekly audits
 │   └── Archive/                    # Monthly archival (YYYY-MM/)
@@ -1774,6 +1787,268 @@ def test_email_mcp():
     log = mcp.audit_log(action, result)
     assert "timestamp" in log
 ```
+
+---
+
+## 📋 PLAN.MD WORKFLOW
+
+### Overview
+
+When Claude Code processes a task, it creates a `Plan.md` file in `PROCESSING/Plans/` to track progress.
+
+### Plan.md Template
+
+```markdown
+---
+task_id: {unique_id}
+created: {timestamp}
+status: pending_approval
+objective: {clear objective statement}
+---
+
+## Objective
+{Detailed objective description}
+
+## Steps
+- [x] Step 1 (completed)
+- [ ] Step 2 (pending)
+- [ ] Step 3 (requires approval)
+
+## Approval Required
+{Description of what needs human approval}
+
+## Notes
+{Additional context or decisions made}
+```
+
+### Workflow
+
+```
+1. Watcher detects new item → Creates action file in INPUT_QUEUES/
+   ↓
+2. Orchestrator moves to PROCESSING/Pending/
+   ↓
+3. Claude reads action file → Creates PROCESSING/Plans/PLAN_{id}.md
+   ↓
+4. Claude updates Plan.md with checkboxes as work progresses
+   ↓
+5. When approval needed → Creates APPROVAL_{id}.md in Pending_Approval/
+   ↓
+6. Human approves → Moves to Approved/
+   ↓
+7. Claude completes remaining steps → Updates Plan.md
+   ↓
+8. Task complete → Moves Plan.md to OUTPUT/Completed/
+```
+
+---
+
+## 🐕 WATCHDOG PROCESS
+
+### Purpose
+
+Automatically restart critical processes if they crash.
+
+### Implementation
+
+```python
+# watchdog.py
+import subprocess
+import time
+from pathlib import Path
+
+PROCESSES = {
+    'orchestrator': 'python orchestrator.py',
+    'gmail_watcher': 'python gmail_watcher.py',
+    'file_watcher': 'python filesystem_watcher.py'
+}
+
+def check_and_restart():
+    for name, cmd in PROCESSES.items():
+        pid_file = Path(f'/tmp/{name}.pid')
+        if not is_process_running(pid_file):
+            logger.warning(f'{name} not running, restarting...')
+            proc = subprocess.Popen(cmd.split())
+            pid_file.write_text(str(proc.pid))
+            notify_human(f'{name} was restarted')
+
+while True:
+    check_and_restart()
+    time.sleep(60)
+```
+
+### Alternative: PM2 (Recommended)
+
+```bash
+# Install PM2
+npm install -g pm2
+
+# Start watchers
+pm2 start gmail_watcher.py --interpreter python3
+pm2 start filesystem_watcher.py --interpreter python3
+
+# Save configuration
+pm2 save
+
+# Setup startup
+pm2 startup
+```
+
+---
+
+## 🔄 RETRY LOGIC
+
+### Pattern
+
+```python
+# retry_handler.py
+import time
+from functools import wraps
+
+def with_retry(max_attempts=3, base_delay=1, max_delay=60):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_attempts):
+                try:
+                    return func(*args, **kwargs)
+                except TransientError as e:
+                    if attempt == max_attempts - 1:
+                        raise
+                    delay = min(base_delay * (2 ** attempt), max_delay)
+                    logger.warning(f'Attempt {attempt+1} failed, retrying in {delay}s')
+                    time.sleep(delay)
+        return wrapper
+    return decorator
+```
+
+### Usage
+
+```python
+@with_retry(max_attempts=3, base_delay=2, max_delay=30)
+def send_email_via_gmail(to, subject, body):
+    # May fail transiently
+    pass
+```
+
+---
+
+## 🛡️ GRACEFUL DEGRADATION
+
+### Failure Scenarios
+
+| Component Fails | Degradation Strategy |
+|-----------------|---------------------|
+| **Gmail API** | Queue outgoing emails locally, process when restored |
+| **Banking API** | Never retry payments automatically, always require fresh approval |
+| **Claude Code** | Watchers continue collecting, queue grows for later processing |
+| **Obsidian vault locked** | Write to temporary folder, sync when available |
+| **Network down** | All operations queue locally, retry when network restored |
+
+### Implementation
+
+```python
+# In each MCP
+def execute(self, action: dict) -> ExecutionResult:
+    try:
+        # Attempt action
+        return self._execute_action(action)
+    except TransientError:
+        # Queue for retry
+        self._queue_for_retry(action)
+        return ExecutionResult(
+            success=False,
+            error="Queued for retry when service restored"
+        )
+    except PermanentError:
+        # Require human intervention
+        self._request_human_intervention(action)
+        return ExecutionResult(
+            success=False,
+            error="Human intervention required"
+        )
+```
+
+---
+
+## 🧪 DRY-RUN MODE
+
+### Purpose
+
+Prevent real external actions during development/testing.
+
+### Implementation
+
+```python
+# In base_mcp.py
+class BaseMCP:
+    def __init__(self, vault_path: str, dry_run: bool = False):
+        self.vault_path = vault_path
+        self.dry_run = dry_run or os.getenv('DRY_RUN', 'false').lower() == 'true'
+    
+    def _check_dry_run(self, action: str) -> bool:
+        if self.dry_run:
+            logger.info(f'[DRY RUN] Would execute: {action}')
+            return True
+        return False
+
+# In each MCP execute method
+def execute(self, action: dict) -> ExecutionResult:
+    if self._check_dry_run('send_email'):
+        return ExecutionResult(
+            success=True,
+            output="[DRY RUN] Email would be sent to {to}"
+        )
+    # Actual execution...
+```
+
+### Usage
+
+```bash
+# Enable dry-run mode
+export DRY_RUN=true
+python orchestrator.py start
+
+# All MCPs will log intended actions without executing
+```
+
+---
+
+## 📊 HACKATHON TIER CHECKLIST
+
+### Bronze Tier ✅
+
+- [x] Obsidian vault with Dashboard.md and Company_Handbook.md
+- [x] Gmail Watcher script (polls every 2 min)
+- [x] Claude Code reading/writing to vault
+- [x] Folder structure: INPUT_QUEUES, PROCESSING, OUTPUT
+- [x] All AI functionality as Qwen Code Skills
+- [x] Ralph Wiggum Loop for multi-step tasks
+- [x] HITL approval workflow
+
+### Silver Tier ⏳
+
+- [ ] WhatsApp Watcher script
+- [ ] LinkedIn auto-posting (SocialMCP)
+- [ ] Plan.md creation workflow
+- [ ] Basic scheduling (cron jobs)
+- [ ] 2+ Watcher scripts
+
+### Gold Tier ⏳
+
+- [ ] OdooMCP for accounting
+- [ ] SocialMCP (Facebook, Instagram, Twitter/X)
+- [ ] CEO Briefing generation (Monday 7 AM)
+- [ ] Hash chain audit logs
+- [ ] Error recovery & graceful degradation
+
+### Platinum Tier ⏳
+
+- [ ] Cloud deployment (Oracle/AWS VM)
+- [ ] Cloud/Local split architecture
+- [ ] Git-based vault sync
+- [ ] Health monitoring dashboard
+- [ ] 24/7 operation with watchdog
 
 ---
 

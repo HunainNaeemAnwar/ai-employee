@@ -588,6 +588,491 @@ def test_state_mcp():
 
 ---
 
+## 📦 DETAILED MCP SPECIFICATIONS
+
+### OdooMCP Specification (Gold Tier)
+
+**File:** `mcp_servers/odoo_mcp.py`  
+**Purpose:** Odoo ERP integration via JSON-RPC API  
+**Dependencies:** `requests`  
+**Rate Limit:** 50 API calls/hour  
+**HITL:** ALWAYS required for financial postings
+
+#### Odoo Configuration
+
+```python
+# Environment variables required
+ODOO_URL = "https://your-instance.odoo.com"
+ODOO_DATABASE = "your_database"
+ODOO_USERNAME = "your_username"
+ODOO_PASSWORD = "your_password"
+```
+
+#### Actions
+
+| Action | Description | HITL Required | Parameters |
+|--------|-------------|---------------|------------|
+| `create_invoice` | Create customer invoice | **ALWAYS** | partner_id, lines, date |
+| `record_payment` | Record payment received | **ALWAYS** | invoice_id, amount, date |
+| `get_report` | Generate P&L, balance sheet | No | report_type, period |
+| `reconcile` | Match transactions | **ALWAYS** | account_id, transactions |
+
+#### Implementation
+
+```python
+class OdooMCP(BaseMCP):
+    def __init__(self, vault_path: str):
+        super().__init__(vault_path)
+        self.rate_limit = 50
+        self.odoo_url = os.getenv('ODOO_URL')
+        self.odoo_db = os.getenv('ODOO_DATABASE')
+        self.odoo_user = os.getenv('ODOO_USERNAME')
+        self.odoo_password = os.getenv('ODOO_PASSWORD')
+    
+    def _requires_hitl(self, action: dict) -> bool:
+        # ALWAYS HITL for financial postings
+        return action.get('action') in ['create_invoice', 'record_payment', 'reconcile']
+    
+    def _jsonrpc_call(self, model: str, method: str, args: list) -> dict:
+        """Make JSON-RPC call to Odoo"""
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "params": {
+                "model": model,
+                "method": method,
+                "args": args
+            },
+            "id": 1
+        }
+        
+        response = requests.post(
+            f"{self.odoo_url}/jsonrpc",
+            json=payload,
+            auth=(self.odoo_user, self.odoo_password),
+            headers={"Content-Type": "application/json"}
+        )
+        
+        return response.json().get('result', {})
+    
+    def execute(self, action: dict) -> ExecutionResult:
+        try:
+            action_type = action.get('action')
+            
+            if action_type == 'create_invoice':
+                return self._create_invoice(action)
+            elif action_type == 'record_payment':
+                return self._record_payment(action)
+            elif action_type == 'get_report':
+                return self._get_report(action)
+            else:
+                return ExecutionResult(
+                    success=False,
+                    error=f"Unknown action: {action_type}"
+                )
+        except Exception as e:
+            return ExecutionResult(success=False, error=str(e))
+    
+    def _create_invoice(self, action: dict) -> ExecutionResult:
+        result = self._jsonrpc_call(
+            model="account.move",
+            method="create",
+            args=[{
+                "move_type": "out_invoice",
+                "partner_id": action['partner_id'],
+                "invoice_line_ids": action['lines'],
+                "invoice_date": action.get('date', datetime.now().strftime('%Y-%m-%d'))
+            }]
+        )
+        
+        invoice_id = result.get('id')
+        return ExecutionResult(
+            success=True,
+            output=f"Invoice created: ID {invoice_id}"
+        )
+    
+    def _record_payment(self, action: dict) -> ExecutionResult:
+        result = self._jsonrpc_call(
+            model="account.payment.register",
+            method="create",
+            args=[{
+                "invoice_ids": [action['invoice_id']],
+                "amount": action['amount'],
+                "payment_date": action.get('date', datetime.now().strftime('%Y-%m-%d'))
+            }]
+        )
+        
+        return ExecutionResult(
+            success=True,
+            output=f"Payment recorded: {action['amount']} for invoice {action['invoice_id']}"
+        )
+    
+    def _get_report(self, action: dict) -> ExecutionResult:
+        report_type = action.get('report_type', 'profit_loss')
+        
+        if report_type == 'profit_loss':
+            data = self._jsonrpc_call(
+                model="account.report",
+                method="get_profit_loss",
+                args=[action.get('period', 'this_month')]
+            )
+        elif report_type == 'balance_sheet':
+            data = self._jsonrpc_call(
+                model="account.report",
+                method="get_balance_sheet",
+                args=[action.get('period', 'this_month')]
+            )
+        else:
+            return ExecutionResult(
+                success=False,
+                error=f"Unknown report type: {report_type}"
+            )
+        
+        return ExecutionResult(
+            success=True,
+            output=json.dumps(data, indent=2)
+        )
+```
+
+---
+
+### SocialMCP Specification (Gold Tier)
+
+**File:** `mcp_servers/social_mcp.py`  
+**Purpose:** Social media posting across platforms  
+**Dependencies:** `requests`  
+**Rate Limit:** 5 posts/hour per platform  
+**HITL:** Required for all posts
+
+#### Platform Configuration
+
+```python
+# Environment variables required
+LINKEDIN_ACCESS_TOKEN = "your_linkedin_token"
+TWITTER_API_KEY = "your_twitter_key"
+TWITTER_API_SECRET = "your_twitter_secret"
+INSTAGRAM_ACCESS_TOKEN = "your_instagram_token"
+```
+
+#### Actions
+
+| Action | Platform | Description | HITL Required |
+|--------|----------|-------------|---------------|
+| `post_linkedin` | LinkedIn | Post to LinkedIn feed | Yes |
+| `post_twitter` | Twitter/X | Post tweet | Yes |
+| `post_instagram` | Instagram | Post to Instagram | Yes |
+| `schedule_post` | All | Schedule for later | Yes |
+
+#### Implementation
+
+```python
+class SocialMCP(BaseMCP):
+    def __init__(self, vault_path: str):
+        super().__init__(vault_path)
+        self.rate_limit = 5  # Per platform per hour
+        self.platforms = {
+            'linkedin': os.getenv('LINKEDIN_ACCESS_TOKEN'),
+            'twitter': {
+                'api_key': os.getenv('TWITTER_API_KEY'),
+                'api_secret': os.getenv('TWITTER_API_SECRET')
+            },
+            'instagram': os.getenv('INSTAGRAM_ACCESS_TOKEN')
+        }
+    
+    def _requires_hitl(self, action: dict) -> bool:
+        # HITL required for all social posts
+        return True
+    
+    def execute(self, action: dict) -> ExecutionResult:
+        try:
+            platform = action.get('platform')
+            
+            if platform == 'linkedin':
+                return self._post_linkedin(action)
+            elif platform == 'twitter':
+                return self._post_twitter(action)
+            elif platform == 'instagram':
+                return self._post_instagram(action)
+            else:
+                return ExecutionResult(
+                    success=False,
+                    error=f"Unknown platform: {platform}"
+                )
+        except Exception as e:
+            return ExecutionResult(success=False, error=str(e))
+    
+    def _post_linkedin(self, action: dict) -> ExecutionResult:
+        """Post to LinkedIn"""
+        headers = {
+            'Authorization': f'Bearer {self.platforms["linkedin"]}',
+            'Content-Type': 'application/json'
+        }
+        
+        payload = {
+            "author": f"urn:li:person:{action.get('person_id', 'me')}",
+            "lifecycleState": "PUBLISHED",
+            "specificContent": {
+                "com.linkedin.ugc.ShareContent": {
+                    "shareCommentary": {
+                        "text": action['content']
+                    },
+                    "shareMediaCategory": "NONE"
+                }
+            },
+            "visibility": {
+                "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+            }
+        }
+        
+        response = requests.post(
+            'https://api.linkedin.com/v2/ugcPosts',
+            headers=headers,
+            json=payload
+        )
+        
+        if response.status_code == 201:
+            post_id = response.json().get('id')
+            return ExecutionResult(
+                success=True,
+                output=f"LinkedIn post created: {post_id}"
+            )
+        else:
+            return ExecutionResult(
+                success=False,
+                error=f"LinkedIn API error: {response.text}"
+            )
+    
+    def _post_twitter(self, action: dict) -> ExecutionResult:
+        """Post to Twitter/X"""
+        # OAuth1.0a authentication required
+        import requests_oauthlib
+        
+        oauth = requests_oauthlib.OAuth1(
+            self.platforms['twitter']['api_key'],
+            self.platforms['twitter']['api_secret'],
+            # Add access token and secret from stored credentials
+        )
+        
+        response = requests.post(
+            'https://api.twitter.com/2/tweets',
+            auth=oauth,
+            json={"text": action['content']}
+        )
+        
+        if response.status_code == 201:
+            tweet_id = response.json().get('data', {}).get('id')
+            return ExecutionResult(
+                success=True,
+                output=f"Tweet posted: {tweet_id}"
+            )
+        else:
+            return ExecutionResult(
+                success=False,
+                error=f"Twitter API error: {response.text}"
+            )
+    
+    def _post_instagram(self, action: dict) -> ExecutionResult:
+        """Post to Instagram"""
+        # Instagram Graph API
+        headers = {
+            'Authorization': f'Bearer {self.platforms["instagram"]}'
+        }
+        
+        # First create media container
+        container_response = requests.post(
+            f'https://graph.facebook.com/v18.0/{action.get("ig_user_id")}/media',
+            headers=headers,
+            params={
+                'image_url': action.get('image_url'),
+                'caption': action['content']
+            }
+        )
+        
+        if container_response.status_code != 200:
+            return ExecutionResult(
+                success=False,
+                error=f"Instagram container error: {container_response.text}"
+            )
+        
+        container_id = container_response.json().get('id')
+        
+        # Then publish the container
+        publish_response = requests.post(
+            f'https://graph.facebook.com/v18.0/{action.get("ig_user_id")}/media_publish',
+            headers=headers,
+            params={'creation_id': container_id}
+        )
+        
+        if publish_response.status_code == 200:
+            media_id = publish_response.json().get('id')
+            return ExecutionResult(
+                success=True,
+                output=f"Instagram post published: {media_id}"
+            )
+        else:
+            return ExecutionResult(
+                success=False,
+                error=f"Instagram publish error: {publish_response.text}"
+            )
+```
+
+---
+
+### WhatsAppMCP Specification (Silver Tier)
+
+**File:** `mcp_servers/whatsapp_mcp.py`  
+**Purpose:** WhatsApp Web automation via Playwright  
+**Dependencies:** `playwright`  
+**Rate Limit:** 20 messages/hour  
+**HITL:** **ALWAYS** required (privacy policy)  
+**LOCAL ONLY:** Never run on cloud
+
+#### Session Management
+
+```python
+# Session stored locally, NEVER synced
+SESSION_PATH = "SECURITY/.whatsapp_session/"
+
+# Session files:
+# - cookies.json
+# - local_storage.json
+# - profile.json
+```
+
+#### Actions
+
+| Action | Description | HITL Required | Parameters |
+|--------|-------------|---------------|------------|
+| `send_message` | Send WhatsApp message | **ALWAYS** | contact, message |
+| `read_chat` | Read recent messages | No | contact, limit |
+| `scan_qr` | Display QR for auth | No | - |
+
+#### Implementation
+
+```python
+class WhatsAppMCP(BaseMCP):
+    def __init__(self, vault_path: str):
+        super().__init__(vault_path)
+        self.rate_limit = 20
+        self.session_path = Path(vault_path) / "SECURITY" / ".whatsapp_session"
+        self.browser = None
+    
+    def _requires_hitl(self, action: dict) -> bool:
+        # ALWAYS HITL for WhatsApp messages (privacy policy)
+        return action.get('action') == 'send_message'
+    
+    def _ensure_browser(self):
+        """Ensure browser is running"""
+        if not self.browser:
+            from playwright.sync_api import sync_playwright
+            playwright = sync_playwright().start()
+            self.browser = playwright.chromium.launch_persistent_context(
+                str(self.session_path),
+                headless=True
+            )
+    
+    def execute(self, action: dict) -> ExecutionResult:
+        try:
+            self._ensure_browser()
+            action_type = action.get('action')
+            
+            if action_type == 'send_message':
+                return self._send_message(action)
+            elif action_type == 'read_chat':
+                return self._read_chat(action)
+            elif action_type == 'scan_qr':
+                return self._scan_qr(action)
+            else:
+                return ExecutionResult(
+                    success=False,
+                    error=f"Unknown action: {action_type}"
+                )
+        except Exception as e:
+            return ExecutionResult(success=False, error=str(e))
+    
+    def _send_message(self, action: dict) -> ExecutionResult:
+        """Send WhatsApp message"""
+        page = self.browser.pages[0]
+        page.goto('https://web.whatsapp.com')
+        
+        # Search for contact
+        search_box = page.query_selector('[role="searchbox"]')
+        search_box.fill(action['contact'])
+        page.wait_for_timeout(1000)
+        
+        # Click on contact
+        contact = page.query_selector('[aria-label*="' + action['contact'] + '"]')
+        contact.click()
+        
+        # Type message
+        message_box = page.query_selector('[role="textbox"]')
+        message_box.fill(action['message'])
+        
+        # Send
+        send_button = page.query_selector('[data-testid="compose-btn-send"]')
+        send_button.click()
+        
+        return ExecutionResult(
+            success=True,
+            output=f"Message sent to {action['contact']}"
+        )
+    
+    def _read_chat(self, action: dict) -> ExecutionResult:
+        """Read recent messages from chat"""
+        page = self.browser.pages[0]
+        page.goto('https://web.whatsapp.com')
+        
+        # Search for contact
+        search_box = page.query_selector('[role="searchbox"]')
+        search_box.fill(action['contact'])
+        page.wait_for_timeout(1000)
+        
+        # Click on contact
+        contact = page.query_selector('[aria-label*="' + action['contact'] + '"]')
+        contact.click()
+        
+        # Get messages
+        messages = page.query_selector_all('[data-testid="message-in"]')
+        recent = messages[-action.get('limit', 10):]
+        
+        chat_history = []
+        for msg in recent:
+            chat_history.append({
+                'text': msg.inner_text(),
+                'timestamp': msg.get_attribute('data-testid')
+            })
+        
+        return ExecutionResult(
+            success=True,
+            output=json.dumps(chat_history, indent=2)
+        )
+    
+    def _scan_qr(self, action: dict) -> ExecutionResult:
+        """Display QR code for authentication"""
+        page = self.browser.pages[0]
+        page.goto('https://web.whatsapp.com')
+        
+        # Wait for QR code
+        qr_code = page.query_selector('[data-testid="qr-code"]')
+        
+        if qr_code:
+            # Save QR code screenshot
+            qr_path = self.vault_path / "SECURITY" / "whatsapp_qr.png"
+            page.screenshot(path=str(qr_path))
+            
+            return ExecutionResult(
+                success=True,
+                output=f"QR code saved to: {qr_path}. Scan with WhatsApp mobile app."
+            )
+        else:
+            return ExecutionResult(
+                success=False,
+                error="QR code not found. Already authenticated?"
+            )
+```
+
+---
+
 ## 📚 REFERENCES
 
 - [Architecture Document](ARCHITECTURE.md#mcp-server-specifications)
