@@ -40,7 +40,13 @@ class RalphLoop:
     COMPLETION_SIGNALS = [
         "<status>TASK_COMPLETE</status>",
         "<promise>COMPLETE</promise>",
-        "DONE"
+        "DONE",
+        "TASK COMPLETE",
+        "task complete",
+        "Task complete",
+        "## DRAFT EMAIL",
+        "Draft Email",
+        "draft email"
     ]
     
     def __init__(self, vault_path: str = None, qwen_cmd: str = "qwen"):
@@ -94,20 +100,28 @@ class RalphLoop:
                 iter_time = time.time() - iter_start
                 print(f"done ({iter_time:.1f}s)")
                 
-                # Check completion signals
-                for signal in self.COMPLETION_SIGNALS:
-                    if signal in result.stdout:
-                        draft = self._extract_draft(result.stdout)
-                        if draft:
-                            task.draft_content = draft
-                        self._cleanup()
-                        total_time = time.time() - start_time
-                        print(f"   ✅ Ralph Loop completed in {total_time:.1f}s ({iteration + 1} iterations)")
-                        return TaskResult(
-                            success=True,
-                            output=result.stdout,
-                            iterations=iteration + 1
-                        )
+                # Debug: Show first part of Qwen's output
+                if result.stdout:
+                    print(f"   📝 Qwen output: {len(result.stdout)} chars")
+                    # Check for ANY content as progress
+                    if len(result.stdout.strip()) > 10:
+                        no_progress_count = 0  # Any output = progress
+                        last_state_hash = "has_output"  # Mark as changed
+                    
+                    # Check completion signals
+                    for signal in self.COMPLETION_SIGNALS:
+                        if signal in result.stdout:
+                            draft = self._extract_draft(result.stdout)
+                            if draft:
+                                task.draft_content = draft
+                            self._cleanup()
+                            total_time = time.time() - start_time
+                            print(f"   ✅ Ralph Loop completed in {total_time:.1f}s ({iteration + 1} iterations)")
+                            return TaskResult(
+                                success=True,
+                                output=result.stdout,
+                                iterations=iteration + 1
+                            )
                 
                 # Check progress
                 current_hash = self._hash_state_file()
