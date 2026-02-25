@@ -39,8 +39,8 @@ A **Digital FTE** that autonomously manages:
 ### Installation
 
 ```bash
-# Navigate to your project directory
-cd <path-to-your-project>
+# Navigate to project directory
+cd personal_assistant
 
 # Activate virtual environment
 source .venv/bin/activate
@@ -122,16 +122,16 @@ MAX_EMAILS_PER_HOUR=10
 
 ### Vault Path
 
-The vault path is configured in this order:
-1. `VAULT_PATH` environment variable
-2. Default: `./AI_Employee_Vault` (relative to project root)
+By default, the vault is located at `./AI_Employee_Vault` (relative to project root).
 
-**Example:**
+To use a custom vault location:
+
 ```bash
-# Set custom vault path
+# Option 1: Environment variable
 export VAULT_PATH=/path/to/your/vault
+python main.py start
 
-# Or in .env file
+# Option 2: .env file
 echo "VAULT_PATH=/path/to/your/vault" >> .env
 ```
 

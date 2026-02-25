@@ -257,7 +257,7 @@ Overall Results: 14/14 PASSED (100%)
 ### Start the System
 
 ```bash
-cd <path-to-your-project>
+cd personal_assistant
 python main.py start
 ```
 
@@ -267,10 +267,10 @@ python main.py start
 # Standalone bash script
 ./scripts/ralph-loop.sh "Process all emails in Needs_Action" \
   --completion-promise "TASK_COMPLETE" \
-  --max-iterations 10 \
-  --vault <path-to-vault>
+  --max-iterations 10
 
 # Or direct bash pattern
+cd AI_Employee_Vault
 echo "Process pending tasks" > PROMPT.md
 while :; do cat PROMPT.md | qwen -i -o text; done
 ```
@@ -279,47 +279,42 @@ while :; do cat PROMPT.md | qwen -i -o text; done
 
 ```bash
 # Check pending emails
-ls <vault-path>/Needs_Action/
+ls AI_Employee_Vault/Needs_Action/
 
 # Check approvals waiting
-ls <vault-path>/Pending_Approval/
+ls AI_Employee_Vault/Pending_Approval/
 
 # Check completed tasks
-ls <vault-path>/Done/
+ls AI_Employee_Vault/Done/
 
 # View today's audit log
-cat <vault-path>/Logs/$(date +%Y-%m-%d).jsonl
+cat AI_Employee_Vault/Logs/$(date +%Y-%m-%d).jsonl
 ```
 
 ### Approve/Discard Drafts
 
 ```bash
 # List pending approvals
-ls <vault-path>/Pending_Approval/
+ls AI_Employee_Vault/Pending_Approval/
 
 # Read approval file
-cat <vault-path>/Pending_Approval/APPROVAL_*.md
+cat AI_Employee_Vault/Pending_Approval/APPROVAL_*.md
 
 # To APPROVE - move to Approved/
-mv <vault-path>/Pending_Approval/APPROVAL_*.md \
-   <vault-path>/Approved/
+mv AI_Employee_Vault/Pending_Approval/APPROVAL_*.md \
+   AI_Employee_Vault/Approved/
 
 # To REJECT - move to Rejected/
-mv <vault-path>/Pending_Approval/APPROVAL_*.md \
-   <vault-path>/Rejected/
+mv AI_Employee_Vault/Pending_Approval/APPROVAL_*.md \
+   AI_Employee_Vault/Rejected/
 ```
 
-### Configure Vault Path
+### Custom Vault Path
 
 ```bash
-# Option 1: Environment variable
+# Use environment variable for custom vault location
 export VAULT_PATH=/path/to/your/vault
-
-# Option 2: .env file
-echo "VAULT_PATH=/path/to/your/vault" >> .env
-
-# Option 3: Command-line argument (if supported)
-python main.py start --vault /path/to/your/vault
+python main.py start
 ```
 
 ---
