@@ -7,12 +7,17 @@
 AI_Employee_Vault/
 ├── Company_Handbook.md       # AI behavior rules (ROOT)
 ├── Business_Goals.md         # KPIs, targets (ROOT)
-├── INPUT_QUEUES/             # Watcher drop zone
-├── PROCESSING/               # Task workflow
-├── OUTPUT/                   # Completed tasks & reports
-├── KNOWLEDGE/                # Contexts, procedures
-├── SECURITY/                 # Credentials (NEVER COMMIT)
-└── SYSTEM/                   # State, config, logs
+├── Dashboard.md              # Real-time status (ROOT)
+├── Inbox/                    # Watcher drop zone (Gmail/, WhatsApp/, etc.)
+├── Needs_Action/             # Tasks waiting to be processed
+├── Plans/                    # Execution plans
+├── Done/                     # Completed tasks
+├── Pending_Approval/         # Awaiting human approval
+├── Approved/                 # Ready to execute
+├── Rejected/                 # Discarded
+├── Knowledge/                # Contexts, procedures
+├── Logs/                     # Audit logs
+└── .system/                  # State, config (hidden)
 ```
 
 ## Qwen Code Skills

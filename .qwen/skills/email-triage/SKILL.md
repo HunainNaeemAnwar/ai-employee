@@ -6,7 +6,7 @@ description: Categorize and prioritize emails from Gmail. Use when new email arr
 # Email Triage Skill
 
 ## When to Use
-- New email detected in `INPUT_QUEUES/Gmail/`
+- New email detected in `Inbox/Gmail/`
 - Need to categorize incoming email
 - Need to calculate priority level
 - Need to determine if HITL approval required

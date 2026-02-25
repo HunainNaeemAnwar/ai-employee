@@ -81,7 +81,7 @@ class StateManager:
         return task
     
     def _update_current_state(self, task: Task) -> None:
-        """Update SYSTEM/state/current_task.json."""
+        """Update .system/state/current_task.json."""
         state = {
             "task_id": task.id,
             "status": task.status.value,
@@ -116,7 +116,7 @@ class StateManager:
         write_json(str(self.state_file), state)
     
     def complete_task(self, task_id: str, result: str) -> None:
-        """Move task to OUTPUT/Completed/."""
+        """Move task to Done/."""
         task = self._find_task_in_progress(task_id)
         
         if not task:
@@ -143,7 +143,7 @@ class StateManager:
         self._reset_state()
     
     def fail_task(self, task_id: str, error: str) -> None:
-        """Move task to PROCESSING/Failed/."""
+        """Move task to Failed/."""
         task = self._find_task_in_progress(task_id)
         
         if not task:
@@ -179,7 +179,7 @@ class StateManager:
         return None
     
     def request_approval(self, task: Task, reason: str) -> str:
-        """Create approval request in PROCESSING/Pending_Approval/."""
+        """Create approval request in Pending_Approval/."""
         approval_id = str(uuid.uuid4())
         approval_file = self.paths.PENDING_APPROVAL / f"APPROVAL_{approval_id}.md"
         
@@ -262,3 +262,75 @@ Move this file to:
             "completed": len(list(self.paths.COMPLETED.glob("*.json"))),
             "failed": len(list(self.paths.FAILED.glob("*.json")))
         }
+
+    def get_task_by_id(self, task_id: str) -> Optional[Task]:
+        """Get task by ID from any folder."""
+        # Search in all folders
+        folders = [
+            self.paths.PENDING,
+            self.paths.IN_PROGRESS,
+            self.paths.PENDING_APPROVAL,
+            self.paths.APPROVED,
+            self.paths.REJECTED,
+            self.paths.COMPLETED,
+            self.paths.FAILED
+        ]
+        
+        for folder in folders:
+            if not folder.exists():
+                continue
+            
+            # Try JSON files
+            for filepath in folder.glob("*.json"):
+                if task_id in filepath.name:
+                    data = read_json(str(filepath))
+                    return Task(data)
+            
+            # Try MD files (for approval requests)
+            for filepath in folder.glob("*.md"):
+                if task_id in filepath.name:
+                    # Extract task info from frontmatter
+                    content = filepath.read_text()
+                    # Parse frontmatter to get task_id
+                    import re
+                    match = re.search(r'task_id:\s*(\S+)', content)
+                    if match and match.group(1) == task_id:
+                        # Create a pseudo-task from approval request
+                        return Task({
+                            "id": task_id,
+                            "type": "approval_request",
+                            "status": "pending_approval"
+                        })
+        
+        return None
+
+    def get_task_from_folder(self, folder_name: str) -> Optional[Task]:
+        """Get first task from specified folder."""
+        folder_map = {
+            "Needs_Action": self.paths.PENDING,
+            "Pending_Approval": self.paths.PENDING_APPROVAL,
+            "Approved": self.paths.APPROVED
+        }
+        
+        folder = folder_map.get(folder_name)
+        if not folder or not folder.exists():
+            return None
+        
+        # Get first JSON file
+        for filepath in folder.glob("*.json"):
+            data = read_json(str(filepath))
+            return Task(data)
+        
+        # Get first MD file (for approval requests)
+        for filepath in folder.glob("*.md"):
+            content = filepath.read_text()
+            import re
+            match = re.search(r'task_id:\s*(\S+)', content)
+            if match:
+                return Task({
+                    "id": match.group(1),
+                    "type": "approval_request",
+                    "status": "pending_approval"
+                })
+        
+        return None

@@ -22,15 +22,15 @@ class GmailWatcher(BaseWatcher):
         """Initialize Gmail Watcher."""
         settings = Settings()
         vault = Path(vault_path) if vault_path else settings.vault_path
-        
+
         super().__init__(
             vault_path=str(vault),
-            queue_folder="INPUT_QUEUES/Gmail",
+            queue_folder="Inbox/Gmail",
             poll_interval=poll_interval or settings.gmail_poll_interval
         )
         
         self.service = None
-        self.seen_ids_file = vault / "SYSTEM" / "state" / "seen_email_ids.json"
+        self.seen_ids_file = vault / ".system" / "state" / "seen_email_ids.json"
         self.seen_ids = self._load_seen_ids()
     
     def _load_seen_ids(self) -> set:
@@ -66,29 +66,46 @@ class GmailWatcher(BaseWatcher):
             from googleapiclient.discovery import build
         except ImportError:
             return False
-        
+
         settings = Settings()
-        token_file = self.vault_path / "SECURITY" / "gmail_token.json"
         
-        if not token_file.exists():
+        # Check multiple token locations (migration compatibility)
+        token_locations = [
+            self.vault_path / ".system" / "gmail_token.json",
+            self.vault_path / "SECURITY" / "gmail_token.json",
+            self.vault_path / "gmail_token.json",
+        ]
+        
+        token_file = None
+        for location in token_locations:
+            if location.exists():
+                token_file = location
+                break
+        
+        if not token_file:
+            print(f"⚠️ Gmail token not found. Run: python scripts/gmail_auth.py")
             return False
-        
+
         try:
             creds = Credentials.from_authorized_user_file(
                 str(token_file), settings.gmail_scopes
             )
-            
+
             if not creds.valid and creds.expired and creds.refresh_token:
                 from google.auth.transport.requests import Request
+                print('🔄 Refreshing expired token...')
                 creds.refresh(Request())
-            
+
             if not creds.valid:
+                print(f"⚠️ Gmail token invalid. Re-run: python scripts/gmail_auth.py")
                 return False
-            
+
             self.service = build('gmail', 'v1', credentials=creds)
+            print(f"✅ Gmail authenticated successfully")
             return True
-            
-        except Exception:
+
+        except Exception as e:
+            print(f"⚠️ Gmail authentication error: {e}")
             return False
     
     def check_for_new_items(self) -> List[Dict[str, Any]]:
@@ -202,17 +219,24 @@ class GmailWatcher(BaseWatcher):
         subject = email.get('subject', '').lower()
         body = email.get('body', '').lower()
         labels = email.get('labels', [])
-        
+
+        # Keyword scoring
         if any(kw in subject or kw in body for kw in ['urgent', 'asap']):
+            score += 30
+        if 'important' in subject:
             score += 20
+        if any(kw in subject or kw in body for kw in ['deadline', 'today', 'eod']):
+            score += 20
+        
+        # Label scoring
         if 'IMPORTANT' in labels:
-            score += 20
+            score += 25
         if 'STARRED' in labels:
             score += 15
-        
+
         if score >= 50:
             return "high"
-        elif score >= 25:
+        elif score >= 20:
             return "medium"
         return "low"
     

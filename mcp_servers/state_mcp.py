@@ -17,15 +17,15 @@ from .base_mcp import BaseMCP, ValidationResult, ExecutionResult
 class StateMCP(BaseMCP):
     """
     State MCP for vault file operations.
-    
+
     Actions:
     - read_file: Read any file in vault
     - write_file: Write file (atomic: temp + rename)
     - move_file: Move file between folders
     - list_directory: List files in folder
-    
+
     Validation Rules:
-    - Cannot write to SECURITY/ (protected)
+    - Cannot write to Logs/ (protected - audit logs)
     - Cannot delete files (only move to Archive)
     - Must use atomic writes
     """
@@ -68,12 +68,12 @@ class StateMCP(BaseMCP):
                 error=f"Invalid action: {action_type}. Must be one of: {valid_actions}"
             )
         
-        # Cannot write to SECURITY/ (protected)
+        # Cannot write to Logs/ (protected - audit logs)
         path = action.get('path', '')
-        if action_type in ['write_file', 'move_file'] and path.startswith('SECURITY/'):
+        if action_type in ['write_file', 'move_file'] and path.startswith('Logs/'):
             return ValidationResult(
                 success=False,
-                error="Cannot write to SECURITY/ folder (protected)"
+                error="Cannot write to Logs/ folder (protected - audit logs)"
             )
         
         # Cannot delete files (only move to Archive)

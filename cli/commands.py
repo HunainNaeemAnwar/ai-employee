@@ -16,7 +16,7 @@ from config.settings import Settings
 from config.paths import Paths
 from core.state import StateManager
 from agents.ralph import RalphLoop
-from actions.email import EmailMCP
+from mcp_servers.email_mcp import EmailMCP
 from watchers.gmail import GmailWatcher
 
 
@@ -100,11 +100,11 @@ def cmd_start(vault_path: str):
 
 def _check_approved_tasks(state_manager, email_mcp, vault_path: str):
     """Check for approved tasks and execute emails."""
-    approved_folder = Path(vault_path) / "PROCESSING" / "Approved"
-    
+    approved_folder = Path(vault_path) / "Approved"
+
     if not approved_folder.exists():
         return
-    
+
     for filepath in approved_folder.glob("*.md"):
         if filepath.name.startswith('APPROVAL_'):
             _process_markdown_approval(filepath, state_manager, email_mcp, vault_path)
@@ -184,10 +184,10 @@ def _process_markdown_approval(filepath, state_manager, email_mcp, vault_path: s
             except Exception as e:
                 print(f"   ⚠️ Could not mark as read: {e}")
         # Move to completed (can't reply to these addresses)
-        completed_folder = Path(vault_path) / "OUTPUT" / "Completed" / "approvals"
+        completed_folder = Path(vault_path) / "Done" / "approvals"
         completed_folder.mkdir(parents=True, exist_ok=True)
         filepath.rename(completed_folder / filepath.name)
-        print(f"   📁 Moved to: OUTPUT/Completed/approvals/ ({address_type})")
+        print(f"   📁 Moved to: Done/approvals/ ({address_type})")
         return
     
     if not subject.lower().startswith('re:'):
@@ -222,25 +222,25 @@ def _process_markdown_approval(filepath, state_manager, email_mcp, vault_path: s
                 except Exception as e:
                     print(f"   ⚠️ Could not mark as read: {e}")
             # Move to completed
-            completed_folder = Path(vault_path) / "OUTPUT" / "Completed" / "approvals"
+            completed_folder = Path(vault_path) / "Done" / "approvals"
             completed_folder.mkdir(parents=True, exist_ok=True)
             temp_filepath.rename(completed_folder / temp_filepath.name)
-            print(f"   📁 Moved to: OUTPUT/Completed/approvals/")
+            print(f"   📁 Moved to: Done/approvals/")
         else:
             print(f"❌ Email send failed")
             # Move to failed
-            failed_folder = Path(vault_path) / "PROCESSING" / "Failed_Approvals"
+            failed_folder = Path(vault_path) / "Failed"
             failed_folder.mkdir(parents=True, exist_ok=True)
             temp_filepath.rename(failed_folder / temp_filepath.name)
-            print(f"   📁 Moved to: PROCESSING/Failed_Approvals/")
+            print(f"   📁 Moved to: Failed/")
             
     except Exception as e:
         print(f"❌ Error sending email: {e}")
         # Move to failed
-        failed_folder = Path(vault_path) / "PROCESSING" / "Failed_Approvals"
+        failed_folder = Path(vault_path) / "Failed"
         failed_folder.mkdir(parents=True, exist_ok=True)
         temp_filepath.rename(failed_folder / temp_filepath.name)
-        print(f"   📁 Moved to: PROCESSING/Failed_Approvals/")
+        print(f"   📁 Moved to: Failed/")
 
 
 def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str):
@@ -272,9 +272,19 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
                 print(f"   ✅ Marked email as read")
             except Exception as e:
                 print(f"   ⚠️ Could not mark as read: {e}")
-        # Complete task without approval
-        state_manager.complete_task(task.id, f"Auto-skipped ({task.type})")
-        print(f"   📁 Moved to: OUTPUT/Completed/ (auto-skipped)")
+        
+        # Move directly from Needs_Action to Done (auto-skipped emails are not claimed)
+        needs_action_path = Path(vault_path) / "Needs_Action" / f"{task.id}.json"
+        done_path = Path(vault_path) / "Done" / f"{task.id}.json"
+        
+        if needs_action_path.exists():
+            needs_action_path.rename(done_path)
+            print(f"   📁 Moved to: Done/ (auto-skipped)")
+        else:
+            # Fallback: use state_manager if file was already claimed
+            state_manager.complete_task(task.id, f"Auto-skipped ({task.type})")
+            print(f"   📁 Moved to: Done/ (auto-skipped)")
+        
         return
     
     # Mark email as read when claimed (user has seen it by moving to Pending/)
@@ -313,7 +323,7 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
                 vault_path=vault_path
             )
             print(f"📋 Approval created: APPROVAL_{approval_id}.md")
-            print(f"   Move to PROCESSING/Approved/ to send")
+            print(f"   Move to Approved/ to send")
         else:
             # No draft - task might be categorization only
             print(f"⚠️ No draft created - task may be categorization only")
@@ -393,11 +403,11 @@ def _create_approval_request(task, draft_content: str, vault_path: str) -> str:
     from utils.files import write_atomic
     import uuid
     from datetime import datetime
-    
+
     approval_id = str(uuid.uuid4())
-    approval_folder = Path(vault_path) / "PROCESSING" / "Pending_Approval"
+    approval_folder = Path(vault_path) / "Pending_Approval"
     approval_folder.mkdir(parents=True, exist_ok=True)
-    
+
     approval_file = approval_folder / f"APPROVAL_{approval_id}.md"
     
     # Get email data

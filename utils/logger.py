@@ -3,6 +3,7 @@ Audit Logger Module
 
 Provides tamper-evident logging for all AI actions.
 Logs are stored in JSONL format (one JSON per line) per day.
+Hackathon Spec Aligned: Uses standard folder names (Logs/)
 """
 
 import json
@@ -15,20 +16,20 @@ from .files import write_atomic
 class AuditLogger:
     """
     Audit logger for AI Employee system.
-    
-    Logs are stored in SECURITY/audit_logs/YYYY-MM-DD.jsonl
+
+    Logs are stored in Logs/YYYY-MM-DD.jsonl
     Each log entry is a single JSON line with timestamp, actor, action, result.
     """
-    
+
     def __init__(self, vault_path: str):
         """
         Initialize audit logger.
-        
+
         Args:
             vault_path: Path to AI_Employee_Vault
         """
         self.vault_path = vault_path
-        self.logs_dir = os.path.join(vault_path, "SECURITY/audit_logs")
+        self.logs_dir = os.path.join(vault_path, "Logs")
         os.makedirs(self.logs_dir, exist_ok=True)
     
     def _get_log_file(self) -> str:

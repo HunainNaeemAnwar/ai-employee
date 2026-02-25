@@ -138,35 +138,49 @@ class EmailMCP(BaseMCP):
     def _authenticate(self) -> bool:
         """
         Authenticate with Gmail API.
-        
+
         Returns:
             True if authenticated, False otherwise
         """
         if self.service:
             return True
-        
+
         try:
             from google.oauth2.credentials import Credentials
             from googleapiclient.discovery import build
-            
-            token_file = self.vault_path / "SECURITY" / "gmail_token.json"
-            
-            if not token_file.exists():
+
+            # Check multiple token locations (migration compatibility)
+            token_locations = [
+                self.vault_path / ".system" / "gmail_token.json",
+                self.vault_path / "SECURITY" / "gmail_token.json",
+                self.vault_path / "gmail_token.json",
+            ]
+
+            token_file = None
+            for location in token_locations:
+                if location.exists():
+                    token_file = location
+                    break
+
+            if not token_file:
+                print(f"⚠️ Gmail token not found. Run: python scripts/gmail_auth.py")
                 return False
-            
+
             creds = Credentials.from_authorized_user_file(str(token_file))
-            
+
             # Refresh if needed
             if not creds.valid and creds.expired and creds.refresh_token:
                 from google.auth.transport.requests import Request
+                print('🔄 Refreshing expired token...')
                 creds.refresh(Request())
-            
+
             if not creds.valid:
+                print(f"⚠️ Gmail token invalid. Re-run: python scripts/gmail_auth.py")
                 return False
-            
+
             self.service = build('gmail', 'v1', credentials=creds)
             return True
-            
+
         except Exception:
             return False
     
@@ -301,20 +315,77 @@ class EmailMCP(BaseMCP):
                 success=False,
                 error="Gmail authentication failed"
             )
-        
+
         query = action.get('q', 'is:unread')
         max_results = action.get('max_results', 10)
-        
+
         # Search
         result = self.service.users().messages().list(
             userId='me',
             q=query,
             maxResults=max_results
         ).execute()
-        
+
         messages = result.get('messages', [])
-        
+
         return ExecutionResult(
             success=True,
             output=f"Found {len(messages)} messages matching: {query}"
         )
+
+    def mark_as_read(self, email_id: str) -> bool:
+        """
+        Mark an email as read.
+
+        Args:
+            email_id: Gmail message ID
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            if not self._authenticate():
+                return False
+
+            # Remove UNREAD label to mark as read
+            self.service.users().messages().modify(
+                userId='me',
+                id=email_id,
+                body={'removeLabelIds': ['UNREAD']}
+            ).execute()
+
+            return True
+
+        except Exception as e:
+            print(f"⚠️ Could not mark email as read: {e}")
+            return False
+
+    def send_email(self, to: str, subject: str, body: str, in_reply_to: str = None) -> bool:
+        """
+        Send email via Gmail API.
+
+        Args:
+            to: Recipient email address
+            subject: Email subject
+            body: Email body text
+            in_reply_to: Message ID to reply to (optional)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        action = {
+            'action': 'send_email',
+            'to': to,
+            'subject': subject,
+            'body': body,
+            'in_reply_to': in_reply_to
+        }
+
+        result = self._send_email(action)
+
+        if result.success:
+            print(f"   ✅ {result.output}")
+            return True
+        else:
+            print(f"   ❌ {result.error}")
+            return False

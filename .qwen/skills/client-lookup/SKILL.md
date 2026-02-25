@@ -38,15 +38,15 @@ description: Check if sender is known client. Use when processing emails, verify
 ## Lookup Process
 
 ### Step 1: Check clients.md
-Search `KNOWLEDGE/Contexts/clients.md` for:
+Search `Knowledge/Contexts/clients.md` for:
 - Exact email match
 - Domain match (e.g., @company.com)
 - Name match
 
 ### Step 2: Check Past Interactions
 Search in:
-- `OUTPUT/Completed/` - Previous completed tasks
-- `SYSTEM/state/task_history.jsonl` - Historical records
+- `Done/` - Previous completed tasks
+- `.system/state/task_history.jsonl` - Historical records
 - Email thread history
 
 ### Step 3: Determine Relationship
@@ -73,7 +73,7 @@ Search in:
 
 ## clients.md Format
 
-Expected format in `KNOWLEDGE/Contexts/clients.md`:
+Expected format in `Knowledge/Contexts/clients.md`:
 
 ```markdown
 # Clients Database
@@ -118,16 +118,16 @@ Expected format in `KNOWLEDGE/Contexts/clients.md`:
 ## Decision Rules
 
 ### Known Client Indicators
-- ✅ Email exactly matches entry in clients.md
-- ✅ Email domain matches trusted domain in clients.md
-- ✅ Name matches and email is slight variation (typo, different address)
-- ✅ Previous completed tasks from same email
+- ✔ Email exactly matches entry in clients.md
+- ✔ Email domain matches trusted domain in clients.md
+- ✔ Name matches and email is slight variation (typo, different address)
+- ✔ Previous completed tasks from same email
 
 ### New Contact Indicators
-- ❌ No email match
-- ❌ No domain match
-- ❌ No name match
-- ❌ First interaction ever recorded
+- ✖ No email match
+- ✖ No domain match
+- ✖ No name match
+- ✖ First interaction ever recorded
 
 ### Red Flags (Always HITL)
 - 🚩 Email similar to known client but different domain (potential spoofing)
@@ -273,8 +273,8 @@ Expected format in `KNOWLEDGE/Contexts/clients.md`:
 ```
 
 ## Related Files
-- `KNOWLEDGE/Contexts/clients.md` - Client database
-- `SYSTEM/state/task_history.jsonl` - Interaction history
-- `OUTPUT/Completed/` - Past completed tasks
+- `Knowledge/Contexts/clients.md` - Client database
+- `.system/state/task_history.jsonl` - Interaction history
+- `Done/` - Past completed tasks
 - `email-triage` skill - Uses client lookup for categorization
 - `email-reply-draft` skill - Uses client info for personalization

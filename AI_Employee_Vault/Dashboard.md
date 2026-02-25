@@ -1,11 +1,11 @@
-# 📊 AI Employee Dashboard
+# ✔ AI Employee Dashboard
 
 **Last Updated:** 2026-02-20 04:30:19  
 **Status:** 🟢 Running
 
 ---
 
-## 🎯 Quick Status
+## ✔ Quick Status
 
 | Metric | Value |
 |--------|-------|
@@ -20,11 +20,11 @@
 
 | Folder                           | Count | Description                 |
 | -------------------------------- | ----- | --------------------------- |
-| **INPUT_QUEUES/Gmail/**          | 0     | New emails detected         |
-| **PROCESSING/Pending/**          | 1     | Tasks waiting to be claimed |
-| **PROCESSING/In_Progress/**      | 1     | Currently being worked on   |
-| **PROCESSING/Pending_Approval/** | 0     | Awaiting human approval     |
-| **OUTPUT/Completed/**            | 0     | Tasks completed today       |
+| **Inbox/Gmail/**                 | 0     | New emails detected         |
+| **Needs_Action/**                | 1     | Tasks waiting to be claimed |
+| **In_Progress/**                 | 1     | Currently being worked on   |
+| **Pending_Approval/**            | 0     | Awaiting human approval     |
+| **Done/**                        | 0     | Tasks completed today       |
 
 ---
 
@@ -34,7 +34,7 @@
 
 ---
 
-## 📈 Today's Metrics
+## ✔ Today's Metrics
 
 | Metric | Target | Actual |
 |--------|--------|--------|
@@ -58,18 +58,18 @@
 
 ---
 
-## 🔧 System Health
+## ✔ System Health
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Gmail Watcher** | ✅ Active | 120s poll |
+| **Gmail Watcher** | ✔ Active | 120s poll |
 | **Ralph Loop** | 🟡 Working | Iteration 1 |
-| **Email MCP** | ✅ Ready | Gmail API |
-| **Audit Logger** | ✅ Active | Logging to JSONL |
+| **Email MCP** | ✔ Ready | Gmail API |
+| **Audit Logger** | ✔ Active | Logging to JSONL |
 
 ---
 
-## 📋 Quick Commands
+## ✔ Quick Commands
 
 ```bash
 # Check status
@@ -84,7 +84,7 @@ python scripts/orchestrator.py stop
 
 ---
 
-## 🎮 Manual Testing
+## ✔ Manual Testing
 
 ```bash
 # Process pending actions manually

@@ -127,16 +127,15 @@ class RalphLoop:
 
                 # Use qwen with positional prompt (non-interactive mode)
                 # Add -y flag to auto-accept (skip interactive confirmations)
-                # Add -i flag for interactive mode (better for single prompts)
                 # Add -o text for plain text output (easier to parse)
                 max_retries = 2
                 for attempt in range(max_retries):
                     try:
                         result = subprocess.run(
-                            ["qwen", "-y", "-i", "-o", "text", prompt_content],  # Add flags for non-interactive
+                            ["qwen", "-y", "-o", "text", prompt_content],  # Non-interactive mode
                             capture_output=True,
                             text=True,
-                            timeout=20,  # Reduced timeout (fail faster)
+                            timeout=120,  # 2 minutes per iteration (increased for slow responses)
                             cwd=str(self.vault_path)
                         )
                         break  # Success, exit retry loop
@@ -262,7 +261,14 @@ class RalphLoop:
     
     def _build_prompt(self, task: Task, iteration: int) -> Path:
         """Build prompt for Qwen iteration."""
-        if task.type == 'email' or 'email' in task.source.lower():
+        # Check if this is an email task (from Gmail Watcher)
+        is_email_task = (
+            task.type == 'email' or 
+            'email' in task.source.lower() or
+            'gmail' in task.source.lower()
+        )
+        
+        if is_email_task:
             action_required = f"""
 ## EMAIL PROCESSING TASK
 
@@ -385,7 +391,7 @@ BEGIN ITERATION {iteration + 1}:
         match = re.search(pattern, output, re.IGNORECASE)
         if match:
             return match.group(1).strip()
-        
+
         # Pattern 8: If output contains email-like content, extract it
         if any(kw in output.lower() for kw in ['dear ', 'best regards', 'sincerely']):
             # Clean up the output
@@ -399,10 +405,20 @@ BEGIN ITERATION {iteration + 1}:
                 if 'best regards' in line.lower() or 'sincerely' in line.lower():
                     email_lines.append(line)
                     break
-            
+
             if email_lines:
                 return '\n'.join(email_lines).strip()
-        
+
+        # Pattern 9: Extract any professional reply mentioned in output
+        if 'reply' in output.lower() and 'professional' in output.lower():
+            # Look for quoted content
+            pattern = r'```\s*\n([\s\S]*?)\n\s*```'
+            match = re.search(pattern, output)
+            if match:
+                draft = match.group(1).strip()
+                if len(draft) > 20 and ('dear' in draft.lower() or 'regards' in draft.lower()):
+                    return draft
+
         return None
     
     def create_plan_file(self, task: 'Task', draft: str) -> 'Path':

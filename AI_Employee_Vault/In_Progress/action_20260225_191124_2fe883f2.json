@@ -1,0 +1,24 @@
+{
+  "id": "GmailWatcher_16008e7d",
+  "source": "GmailWatcher",
+  "timestamp": "2026-02-25T19:11:24.299851",
+  "type": "general",
+  "priority": "low",
+  "data": {
+    "email_id": "19c95235c50394da",
+    "thread_id": "19c95235c50394da",
+    "labels": [
+      "UNREAD",
+      "CATEGORY_PERSONAL",
+      "INBOX"
+    ],
+    "received_at": "2026-02-25T19:10:35",
+    "from": "Hunain Naeem Anwar <hunainnaeemanwar@gmail.com>",
+    "subject": "Request for Feedback",
+    "to": "arhaamkhan125@gmail.com",
+    "body": "Dear Arhaam,\r\n\r\nI hope you are doing well.\r\n\r\nI would like to request your feedback on the recent work I completed. Your\r\nsuggestions and insights would be very helpful in improving the quality and\r\nensuring everything meets the expected standards.\r\n\r\nPlease let me know if there are any changes or improvements you would\r\nrecommend. I am ready to make the necessary adjustments as soon as possible.\r\n\r\nThank you for your time and guidance.\r\n\r\nBest regards,\r\nHunain\r\n",
+    "has_attachments": false
+  },
+  "status": "new",
+  "hitl_required": true
+}

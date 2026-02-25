@@ -1,0 +1,24 @@
+{
+  "id": "GmailWatcher_86f58620",
+  "source": "GmailWatcher",
+  "timestamp": "2026-02-25T03:55:56.964457",
+  "type": "general",
+  "priority": "low",
+  "data": {
+    "email_id": "19c91dcd0120d699",
+    "thread_id": "19c91dcd0120d699",
+    "labels": [
+      "UNREAD",
+      "CATEGORY_PERSONAL",
+      "INBOX"
+    ],
+    "received_at": "2026-02-25T03:54:41",
+    "from": "Hunain Naeem Anwar <hunainnaeemanwar@gmail.com>",
+    "subject": "Sharing a Useful Resourc",
+    "to": "arhaamkhan125@gmail.com",
+    "body": "Dear Arhaam,\r\n\r\nI hope you are doing well.\r\n\r\nI wanted to share a useful resource that I recently came across and thought\r\nmight be helpful for our work. It contains practical information and\r\nexamples that could improve our workflow and make certain tasks easier to\r\nmanage.\r\n\r\nPlease let me know if you would like me to summarize the key points or\r\ndiscuss how we can apply these ideas in our current projects.\r\n\r\nLooking forward to your thoughts.\r\n\r\nBest regards,\r\nHunain\r\n",
+    "has_attachments": false
+  },
+  "status": "new",
+  "hitl_required": true
+}

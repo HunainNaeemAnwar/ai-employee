@@ -23,12 +23,25 @@ class SecretsManager:
     def __init__(self, vault_path: str):
         """
         Initialize secrets manager.
-        
+
         Args:
             vault_path: Path to AI_Employee_Vault
         """
         self.vault_path = vault_path
-        self.env_file = os.path.join(vault_path, "SECURITY/.env")
+        
+        # Check multiple .env locations (migration compatibility)
+        env_locations = [
+            os.path.join(vault_path, ".env"),
+            os.path.join(vault_path, "SECURITY", ".env"),
+            os.path.join(os.path.dirname(vault_path), ".env"),
+        ]
+        
+        self.env_file = None
+        for location in env_locations:
+            if os.path.exists(location):
+                self.env_file = location
+                break
+        
         self._load_secrets()
     
     def _load_secrets(self) -> None:

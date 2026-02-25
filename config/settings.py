@@ -14,10 +14,17 @@ class Settings:
     
     def __init__(self):
         """Load settings from environment."""
-        # Load .env file
-        env_file = Path(__file__).parent.parent / "AI_Employee_Vault" / "SECURITY" / ".env"
-        if env_file.exists():
-            load_dotenv(env_file)
+        # Load .env file (check multiple locations for migration compatibility)
+        env_locations = [
+            Path(__file__).parent.parent / ".env",
+            Path(__file__).parent.parent / "AI_Employee_Vault" / ".env",
+            Path(__file__).parent.parent / "AI_Employee_Vault" / "SECURITY" / ".env",
+        ]
+        
+        for env_file in env_locations:
+            if env_file.exists():
+                load_dotenv(env_file)
+                break
         
         # Vault configuration
         self.vault_path = Path(
@@ -28,9 +35,9 @@ class Settings:
         self.gmail_poll_interval = int(os.getenv("GMAIL_POLL_INTERVAL", "120"))
         self.whatsapp_poll_interval = int(os.getenv("WHATSAPP_POLL_INTERVAL", "30"))
         
-        # Ralph Loop settings (optimized for speed)
-        self.max_iterations = int(os.getenv("MAX_ITERATIONS", "5"))
-        self.iteration_timeout = int(os.getenv("ITERATION_TIMEOUT", "60"))
+        # Ralph Loop settings (increased for better reliability)
+        self.max_iterations = int(os.getenv("MAX_ITERATIONS", "10"))
+        self.iteration_timeout = int(os.getenv("ITERATION_TIMEOUT", "120"))
         self.no_progress_threshold = int(os.getenv("NO_PROGRESS_THRESHOLD", "2"))
         
         # Email settings

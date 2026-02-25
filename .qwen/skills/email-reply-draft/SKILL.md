@@ -105,19 +105,19 @@ AI Employee
 ## Reply Guidelines
 
 ### DO
-- ✅ Respond within 24 hours (SLA)
-- ✅ Address all questions asked
-- ✅ Keep under 1000 characters when possible
-- ✅ Include clear next steps
-- ✅ Proofread before sending
-- ✅ Match sender's formality level
+- ✔ Respond within 24 hours (SLA)
+- ✔ Address all questions asked
+- ✔ Keep under 1000 characters when possible
+- ✔ Include clear next steps
+- ✔ Proofread before sending
+- ✔ Match sender's formality level
 
 ### DON'T
-- ❌ Use ALL CAPS
-- ❌ Send without reviewing (if HITL required)
-- ❌ Include unnecessary attachments
-- ❌ Make promises without approval
-- ❌ Use overly casual language with new contacts
+- ✖ Use ALL CAPS
+- ✖ Send without reviewing (if HITL required)
+- ✖ Include unnecessary attachments
+- ✖ Make promises without approval
+- ✖ Use overly casual language with new contacts
 
 ## HITL Recommendation Rules
 
@@ -239,5 +239,5 @@ AI Employee
 
 ## Related Files
 - `Company_Handbook.md` - Company tone and communication guidelines
-- `PROCESSING/Pending_Approval/` - Where drafts awaiting approval are stored
-- `KNOWLEDGE/Contexts/clients.md` - Client information for personalization
+- `Pending_Approval/` - Where drafts awaiting approval are stored
+- `Knowledge/Contexts/clients.md` - Client information for personalization

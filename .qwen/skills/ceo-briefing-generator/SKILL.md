@@ -42,20 +42,20 @@ description: Generate weekly CEO briefing report every Monday 7 AM. Use when cre
 **Week:** {week_start} to {week_end}
 **Generated:** {timestamp}
 
-## 🎯 Key Metrics
+## ✔ Key Metrics
 
 | Metric | This Week | Target | Status |
 |--------|-----------|--------|--------|
-| Tasks Completed | X | 100+ | ✅/⚠️ |
-| Emails Processed | X | 200+ | ✅/⚠️ |
-| Auto-Approve Rate | X% | 60% | ✅/⚠️ |
+| Tasks Completed | X | 100+ | ✔/⚠️ |
+| Emails Processed | X | 200+ | ✔/⚠️ |
+| Auto-Approve Rate | X% | 60% | ✔/⚠️ |
 | HITL Actions | X | - | ℹ️ |
-| Avg Response Time | X min | <30 min | ✅/⚠️ |
+| Avg Response Time | X min | <30 min | ✔/⚠️ |
 ```
 
 ### 2. Task Breakdown
 ```markdown
-## 📋 Task Breakdown
+## ✔ Task Breakdown
 
 ### By Type
 | Type | Count | % of Total |
@@ -75,7 +75,7 @@ description: Generate weekly CEO briefing report every Monday 7 AM. Use when cre
 
 ### 3. Top Wins
 ```markdown
-## 🏆 Top Wins This Week
+## ✔ Top Wins This Week
 
 1. **Largest Task Completed:** {task_name} - {impact}
 2. **Fastest Response:** {task_name} - {time} minutes
@@ -94,18 +94,18 @@ description: Generate weekly CEO briefing report every Monday 7 AM. Use when cre
 
 ### 5. System Health
 ```markdown
-## 🔧 System Health
+## ✔ System Health
 
 | Component | Status | Uptime | Issues |
 |-----------|--------|--------|--------|
-| Gmail Watcher | ✅ Active | 99.9% | None |
-| Ralph Loop | ✅ Active | 100% | None |
-| Email MCP | ✅ Active | 99.5% | None |
+| Gmail Watcher | ✔ Active | 99.9% | None |
+| Ralph Loop | ✔ Active | 100% | None |
+| Email MCP | ✔ Active | 99.5% | None |
 ```
 
 ### 6. Recommendations
 ```markdown
-## 💡 Recommendations for Next Week
+## ✔ Recommendations for Next Week
 
 1. **Priority Focus:** {recommendation based on pending high-priority tasks}
 2. **Process Improvement:** {suggestion based on bottlenecks}
@@ -117,26 +117,26 @@ description: Generate weekly CEO briefing report every Monday 7 AM. Use when cre
 ### Scan These Folders
 | Folder | Purpose |
 |--------|---------|
-| `OUTPUT/Completed/` | Completed tasks this week |
-| `OUTPUT/Reports/` | Previous reports (for comparison) |
-| `SECURITY/audit_logs/` | Action logs for metrics |
-| `SYSTEM/state/task_history.jsonl` | Full task history |
+| `Done/` | Completed tasks this week |
+| `Reports/` | Previous reports (for comparison) |
+| `Logs/` | Action logs for metrics |
+| `.system/state/task_history.jsonl` | Full task history |
 
 ### Calculate Metrics
 ```python
 # Pseudo-code for metric calculation
-total_tasks = count_files("OUTPUT/Completed/", pattern="*.json")
-emails_processed = count_lines_matching("SECURITY/audit_logs/*.jsonl", "email_sent")
-hitl_actions = count_lines_matching("SECURITY/audit_logs/*.jsonl", "hitl: true")
+total_tasks = count_files("Done/", pattern="*.json")
+emails_processed = count_lines_matching("Logs/*.jsonl", "email_sent")
+hitl_actions = count_lines_matching("Logs/*.jsonl", "hitl: true")
 auto_approve_rate = (total_tasks - hitl_actions) / total_tasks * 100
 ```
 
 ## Generation Process
 
 ### Step 1: Collect Data
-1. Scan `OUTPUT/Completed/` for tasks completed this week
-2. Parse `SYSTEM/state/task_history.jsonl` for all task records
-3. Aggregate `SECURITY/audit_logs/*.jsonl` for action counts
+1. Scan `Done/` for tasks completed this week
+2. Parse `.system/state/task_history.jsonl` for all task records
+3. Aggregate `Logs/*.jsonl` for action counts
 
 ### Step 2: Calculate Metrics
 1. Total tasks completed
@@ -146,13 +146,13 @@ auto_approve_rate = (total_tasks - hitl_actions) / total_tasks * 100
 5. Task completion by type and priority
 
 ### Step 3: Generate Report
-1. Create markdown file: `OUTPUT/Reports/ceo_briefing_{week_end}.md`
+1. Create markdown file: `Reports/ceo_briefing_{week_end}.md`
 2. Fill in all sections with calculated data
 3. Add comparison to previous week (if available)
 4. Highlight anomalies and recommendations
 
 ### Step 4: Save and Notify
-1. Save report to `OUTPUT/Reports/`
+1. Save report to `Reports/`
 2. Update `Dashboard.md` with summary metrics
 3. Log generation to audit trail
 4. (Optional) Email report to CEO
@@ -175,17 +175,17 @@ auto_approve_rate = (total_tasks - hitl_actions) / total_tasks * 100
 **Week:** 2026-02-16 to 2026-02-22
 **Generated:** 2026-02-22 07:00:00
 
-## 🎯 Key Metrics
+## ✔ Key Metrics
 
 | Metric | This Week | Target | Status |
 |--------|-----------|--------|--------|
 | Tasks Completed | 47 | 100+ | ⚠️ 47% |
 | Emails Processed | 89 | 200+ | ⚠️ 44% |
-| Auto-Approve Rate | 62% | 60% | ✅ |
+| Auto-Approve Rate | 62% | 60% | ✔ |
 | HITL Actions | 17 | - | ℹ️ |
-| Avg Response Time | 12 min | <30 min | ✅ |
+| Avg Response Time | 12 min | <30 min | ✔ |
 
-## 📋 Task Breakdown
+## ✔ Task Breakdown
 
 ### By Type
 | Type | Count | % of Total |
@@ -195,7 +195,7 @@ auto_approve_rate = (total_tasks - hitl_actions) / total_tasks * 100
 | Meeting Scheduled | 4 | 9% |
 | Data Entry | 3 | 6% |
 
-## 🏆 Top Wins This Week
+## ✔ Top Wins This Week
 
 1. **Largest Task Completed:** Invoice batch processing - Generated 5 invoices in 2 minutes
 2. **Fastest Response:** Urgent client email - 3 minutes
@@ -208,7 +208,7 @@ auto_approve_rate = (total_tasks - hitl_actions) / total_tasks * 100
 |------|-----|----------|---------------|
 | Vendor contract approval | 2 days | High | Review and approve |
 
-## 💡 Recommendations for Next Week
+## ✔ Recommendations for Next Week
 
 1. **Priority Focus:** Clear pending approval queue (1 high-priority item)
 2. **Process Improvement:** Consider auto-approving known vendor invoices
@@ -231,23 +231,23 @@ auto_approve_rate = (total_tasks - hitl_actions) / total_tasks * 100
 **Week:** 2026-04-06 to 2026-04-12
 **Generated:** 2026-04-12 07:00:00
 
-## 🎯 Key Metrics
+## ✔ Key Metrics
 
 | Metric | This Week | Last Week | Target | Status |
 |--------|-----------|-----------|--------|--------|
-| Tasks Completed | 156 | 142 | 100+ | ✅ +10% |
-| Emails Processed | 312 | 289 | 200+ | ✅ +8% |
-| Auto-Approve Rate | 71% | 68% | 60% | ✅ |
+| Tasks Completed | 156 | 142 | 100+ | ✔ +10% |
+| Emails Processed | 312 | 289 | 200+ | ✔ +8% |
+| Auto-Approve Rate | 71% | 68% | 60% | ✔ |
 | HITL Actions | 45 | 46 | - | ℹ️ |
-| Avg Response Time | 8 min | 11 min | <30 min | ✅ |
+| Avg Response Time | 8 min | 11 min | <30 min | ✔ |
 
-## 🏆 Top Wins This Week
+## ✔ Top Wins This Week
 
 1. **Largest Task Completed:** Q1 financial reconciliation - Processed 500 transactions
 2. **Cost Savings:** $847/month identified (unused subscriptions)
 3. **Revenue Generated:** $12,500 (auto-generated invoices)
 
-## 💡 Recommendations for Next Week
+## ✔ Recommendations for Next Week
 
 1. **Cost Optimization:** Cancel 3 unused subscriptions (save $847/month = $10,164/year)
 2. **Process Improvement:** Auto-approve invoices under $100 from known vendors
@@ -255,10 +255,10 @@ auto_approve_rate = (total_tasks - hitl_actions) / total_tasks * 100
 ```
 
 ## Related Files
-- `OUTPUT/Completed/` - Completed task archive
-- `OUTPUT/Reports/` - Historical reports
-- `SECURITY/audit_logs/` - Action audit trail
-- `SYSTEM/state/task_history.jsonl` - Task history
+- `Done/` - Completed task archive
+- `Reports/` - Historical reports
+- `Logs/` - Action audit trail
+- `.system/state/task_history.jsonl` - Task history
 - `Dashboard.md` - Real-time status (update with summary)
 
 ## Scheduling

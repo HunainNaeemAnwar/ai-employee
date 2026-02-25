@@ -1,0 +1,25 @@
+{
+  "id": "GmailWatcher_5599877c",
+  "source": "GmailWatcher",
+  "timestamp": "2026-02-25T01:02:13.642532",
+  "type": "general",
+  "priority": "low",
+  "data": {
+    "email_id": "19c911f48c59fe87",
+    "thread_id": "19c911f48c59fe87",
+    "labels": [
+      "UNREAD",
+      "IMPORTANT",
+      "CATEGORY_PERSONAL",
+      "INBOX"
+    ],
+    "received_at": "2026-02-25T00:27:39",
+    "from": "Hunain Naeem Anwar <hunainnaeemanwar@gmail.com>",
+    "subject": "Appreciation for Your Support",
+    "to": "arhaamkhan125@gmail.com",
+    "body": "Dear Arhaam,\r\n\r\nI hope you are doing well.\r\n\r\nI would like to take a moment to sincerely thank you for your continued\r\nsupport and guidance. Your feedback and assistance have been extremely\r\nhelpful in improving both the quality and efficiency of my work.\r\n\r\nI truly appreciate the time and effort you invest in ensuring everything\r\nruns smoothly. Please let me know if there is anything further I can\r\ncontribute to support our ongoing tasks and objectives.\r\n\r\nThank you once again for your encouragement and leadership.\r\n\r\nBest regards,\r\nHunain\r\n",
+    "has_attachments": false
+  },
+  "status": "new",
+  "hitl_required": true
+}

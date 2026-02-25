@@ -2,6 +2,7 @@
 Base watcher class for AI Employee.
 
 Abstract base class for all watchers.
+Hackathon Spec Aligned: Uses standard folder names (Inbox, Needs_Action, etc.)
 """
 
 import os

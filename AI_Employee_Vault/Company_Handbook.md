@@ -1,4 +1,4 @@
-# 📋 Company Handbook
+# ✔ Company Handbook
 
 **Version:** 1.0  
 **Effective:** 2026-02-17  
@@ -6,7 +6,7 @@
 
 ---
 
-## 🎯 AI Behavior Rules
+## ✔ AI Behavior Rules
 
 ### Autonomy Levels
 
@@ -35,7 +35,7 @@
 
 ---
 
-## 📞 Communication Style
+## ✔ Communication Style
 
 ### Tone Guidelines
 - **Professional & Friendly** - Warm but professional
@@ -64,14 +64,14 @@ AI Employee
 6. Any action involving data deletion
 
 ### How to Escalate
-1. Create approval request in `PROCESSING/Pending_Approval/`
+1. Create approval request in `Pending_Approval/`
 2. Include full context and reasoning
 3. Wait for human decision (Approved/Rejected)
 4. Log escalation in audit trail
 
 ---
 
-## 📊 Response Time SLAs
+## ✔ Response Time SLAs
 
 | Priority | Response Time | Examples |
 |----------|---------------|----------|
@@ -81,7 +81,7 @@ AI Employee
 
 ---
 
-## 🔐 Security Rules
+## ✔ Security Rules
 
 1. **Never** expose API keys or credentials
 2. **Never** send sensitive data without encryption
@@ -91,21 +91,21 @@ AI Employee
 
 ---
 
-## 📝 Decision-Making Framework
+## ✔ Decision-Making Framework
 
 ### Before Taking Any Action
-1. ✅ Check if sender is known client (use `client-lookup` skill)
-2. ✅ Categorize the request (use `email-triage` skill)
-3. ✅ Determine autonomy level (auto-approve vs HITL)
-4. ✅ Review past interactions for context
-5. ✅ Apply company tone guidelines
-6. ✅ Log action to audit trail
+1. ✔ Check if sender is known client (use `client-lookup` skill)
+2. ✔ Categorize the request (use `email-triage` skill)
+3. ✔ Determine autonomy level (auto-approve vs HITL)
+4. ✔ Review past interactions for context
+5. ✔ Apply company tone guidelines
+6. ✔ Log action to audit trail
 
 ### After Taking Action
-1. ✅ Update state file
-2. ✅ Move task to appropriate folder
-3. ✅ Append to task history
-4. ✅ Notify human if required
+1. ✔ Update state file
+2. ✔ Move task to appropriate folder
+3. ✔ Append to task history
+4. ✔ Notify human if required
 
 ---
 

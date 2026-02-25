@@ -1,189 +1,208 @@
+#!/usr/bin/env python3
 """
 Gmail OAuth2 Authentication Script
 
-Run this script once to authenticate with Gmail API.
-It will open a browser window for you to grant permissions.
-The token is saved to SECURITY/gmail_token.json.
+Run this script to authenticate with Gmail API and create the token file.
+The token will be saved to AI_Employee_Vault/.system/gmail_token.json
+
+Usage:
+    python scripts/gmail_auth.py
+
+Requirements:
+    - Gmail API enabled in Google Cloud Console
+    - OAuth 2.0 credentials (client_id, client_secret)
+    - credentials.json file in AI_Employee_Vault/.system/
 """
 
 import os
 import sys
-import json
+from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.secrets import get_secrets
+from config.settings import Settings
 
 
-def authenticate_gmail(vault_path: str) -> str:
-    """
-    Run Gmail OAuth2 authentication flow.
+def authenticate_gmail():
+    """Authenticate with Gmail API using OAuth2."""
+    print("🔐 Gmail OAuth2 Authentication")
+    print("=" * 60)
     
-    Args:
-        vault_path: Path to AI_Employee_Vault
-        
-    Returns:
-        Path to saved token file
-        
-    Raises:
-        ImportError: If required Google libraries are not installed
-        ValueError: If credentials are not configured
-    """
+    settings = Settings()
+    vault_path = Path(settings.vault_path)
+    
+    # Token and credentials locations
+    token_file = vault_path / ".system" / "gmail_token.json"
+    credentials_file = vault_path / ".system" / "credentials.json"
+    
+    # Also check old SECURITY/ location for migration
+    if not credentials_file.exists():
+        old_credentials = vault_path / "SECURITY" / "credentials.json"
+        if old_credentials.exists():
+            print(f"📂 Found credentials in old location, copying...")
+            import shutil
+            token_file = vault_path / ".system" / "gmail_token.json"
+            token_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(old_credentials, credentials_file)
+    
+    # Check if credentials file exists
+    if not credentials_file.exists():
+        print(f"❌ Error: credentials.json not found at {credentials_file}")
+        print()
+        print("To get credentials:")
+        print("1. Go to Google Cloud Console: https://console.cloud.google.com/")
+        print("2. Enable Gmail API")
+        print("3. Create OAuth 2.0 credentials")
+        print("4. Download credentials.json")
+        print(f"5. Save it to: {credentials_file}")
+        return False
+    
     try:
         from google_auth_oauthlib.flow import InstalledAppFlow
         from google.auth.transport.requests import Request
         from google.oauth2.credentials import Credentials
-        from googleapiclient.discovery import build
-    except ImportError as e:
-        raise ImportError(
-            "Google API libraries not installed. Run:\n"
-            "pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib"
-        ) from e
-    
-    # Load secrets
-    secrets = get_secrets(vault_path)
-    
-    # Check if credentials exist
-    credentials_file = os.path.join(vault_path, "SECURITY/credentials.json")
-    token_file = os.path.join(vault_path, "SECURITY/gmail_token.json")
-    
-    if not os.path.exists(credentials_file):
-        raise ValueError(
-            f"credentials.json not found at {credentials_file}\n"
-            "Please download it from Google Cloud Console:\n"
-            "1. Go to https://console.cloud.google.com/\n"
-            "2. Create/select project\n"
-            "3. Enable Gmail API\n"
-            "4. Create OAuth2 credentials (Desktop app)\n"
-            "5. Download credentials.json to SECURITY/"
-        )
-    
-    # OAuth2 scopes
-    SCOPES = [
-        'https://www.googleapis.com/auth/gmail.readonly',
-        'https://www.googleapis.com/auth/gmail.send',
-        'https://www.googleapis.com/auth/gmail.labels',
-        'https://www.googleapis.com/auth/gmail.modify'
-    ]
-    
-    creds = None
-    
-    # Load existing token
-    if os.path.exists(token_file):
-        creds = Credentials.from_authorized_user_file(token_file, SCOPES)
-    
-    # Refresh or get new credentials
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            # Run OAuth2 flow
-            flow = InstalledAppFlow.from_client_secrets_file(
-                credentials_file, SCOPES
-            )
-            creds = flow.run_local_server(port=8080)
         
-        # Save token
-        os.makedirs(os.path.dirname(token_file), exist_ok=True)
-        with open(token_file, 'w') as f:
-            f.write(creds.to_json())
-        
-        print(f"✅ Token saved to {token_file}")
-    else:
-        print(f"✅ Using existing token at {token_file}")
-    
-    # Test connection
-    try:
-        service = build('gmail', 'v1', credentials=creds)
-        profile = service.users().getProfile(userId='me').execute()
-        print(f"✅ Connected to Gmail: {profile['emailAddress']}")
-    except Exception as e:
-        print(f"⚠️ Connection test failed: {e}")
-    
-    return token_file
-
-
-def check_auth(vault_path: str) -> bool:
-    """
-    Check if Gmail authentication exists and is valid.
-    
-    Args:
-        vault_path: Path to AI_Employee_Vault
-        
-    Returns:
-        True if authenticated, False otherwise
-    """
-    token_file = os.path.join(vault_path, "SECURITY/gmail_token.json")
-    
-    if not os.path.exists(token_file):
-        return False
-    
-    try:
-        from google.oauth2.credentials import Credentials
-        from google.auth.transport.requests import Request
-        
-        secrets = get_secrets(vault_path)
-        SCOPES = [
+        # Define scopes
+        scopes = [
             'https://www.googleapis.com/auth/gmail.readonly',
             'https://www.googleapis.com/auth/gmail.send',
             'https://www.googleapis.com/auth/gmail.labels',
             'https://www.googleapis.com/auth/gmail.modify'
         ]
         
-        creds = Credentials.from_authorized_user_file(token_file, SCOPES)
+        creds = None
         
-        # Refresh if needed
-        if not creds.valid and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-            # Save refreshed token
-            with open(token_file, 'w') as f:
-                f.write(creds.to_json())
+        # Load existing token
+        if token_file.exists():
+            print(f"📂 Found existing token: {token_file}")
+            creds = Credentials.from_authorized_user_file(str(token_file), scopes)
         
-        return creds.valid
+        # Refresh or re-authenticate
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                print("🔄 Refreshing expired token...")
+                try:
+                    creds.refresh(Request())
+                    print("✅ Token refreshed successfully")
+                except Exception as e:
+                    print(f"⚠️ Token refresh failed: {e}")
+                    creds = None
+            
+            if not creds:
+                print("🌐 Opening browser for OAuth authentication...")
+                print("   Please complete the authentication in your browser.")
+                
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    str(credentials_file), scopes
+                )
+                
+                # Run local server for OAuth callback
+                creds = flow.run_local_server(
+                    port=8080,
+                    bind_addr="127.0.0.1",
+                    open_browser=True
+                )
+                
+                print("✅ Authentication successful!")
+        
+        # Save token
+        token_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(token_file, 'w') as f:
+            f.write(creds.to_json())
+        
+        print(f"💾 Token saved to: {token_file}")
+        print()
+        print("✅ Gmail authentication complete!")
+        print()
+        print("Next steps:")
+        print("1. Run: python main.py start")
+        print("2. Gmail Watcher will now poll for new emails")
+        
+        return True
+        
+    except FileNotFoundError:
+        print(f"❌ Error: credentials.json not found")
+        print(f"   Expected at: {credentials_file}")
+        return False
+    except Exception as e:
+        print(f"❌ Authentication error: {e}")
+        print()
+        print("Troubleshooting:")
+        print("1. Make sure credentials.json is valid")
+        print("2. Make sure Gmail API is enabled")
+        print("3. Try deleting the token file and re-authenticating")
+        return False
+
+
+def test_authentication():
+    """Test Gmail authentication by making a simple API call."""
+    print("🧪 Testing Gmail authentication...")
+    print("=" * 60)
     
-    except Exception:
+    settings = Settings()
+    vault_path = Path(settings.vault_path)
+    token_file = vault_path / ".system" / "gmail_token.json"
+    
+    if not token_file.exists():
+        print("❌ Token file not found. Run authentication first:")
+        print("   python scripts/gmail_auth.py")
+        return False
+    
+    try:
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+        
+        scopes = [
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.send',
+        ]
+        
+        creds = Credentials.from_authorized_user_file(str(token_file), scopes)
+        
+        if not creds.valid:
+            print("❌ Token is invalid or expired")
+            print("   Re-run: python scripts/gmail_auth.py")
+            return False
+        
+        # Build service and test
+        service = build('gmail', 'v1', credentials=creds)
+        
+        # Try to list labels (simple test)
+        results = service.users().labels().list(userId='me').execute()
+        labels = results.get('labels', [])
+        
+        print(f"✅ Authentication successful!")
+        print(f"   Found {len(labels)} Gmail labels")
+        print(f"   Token valid until: {creds.expiry}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Test failed: {e}")
         return False
 
 
 def main():
     """Main entry point."""
-    # Default vault path
-    vault_path = os.environ.get(
-        "VAULT_PATH",
-        "/home/hunain/personal_assistant/AI_Employee_Vault"
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description="Gmail OAuth2 Authentication"
+    )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Test existing authentication"
     )
     
-    print("🔐 Gmail OAuth2 Authentication")
-    print("=" * 40)
+    args = parser.parse_args()
     
-    # Check if already authenticated
-    if check_auth(vault_path):
-        print("✅ Already authenticated!")
-        return
+    if args.test:
+        success = test_authentication()
+    else:
+        success = authenticate_gmail()
     
-    print("\n📋 Instructions:")
-    print("1. A browser window will open")
-    print("2. Sign in with your Google account")
-    print("3. Grant Gmail API permissions")
-    print("4. Browser will redirect to localhost")
-    print("5. Token will be saved automatically\n")
-    
-    input("Press Enter to start authentication...")
-    
-    try:
-        token_path = authenticate_gmail(vault_path)
-        print(f"\n✅ Authentication complete!")
-        print(f"Token saved to: {token_path}")
-    except ImportError as e:
-        print(f"\n❌ Error: {e}")
-        sys.exit(1)
-    except ValueError as e:
-        print(f"\n❌ Error: {e}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
-        sys.exit(1)
+    sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":
