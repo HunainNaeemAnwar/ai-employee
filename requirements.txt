@@ -1,0 +1,18 @@
+# Personal AI Employee - Dependencies
+# Generated from pyproject.toml
+# Python Version: >=3.10
+
+# Core Dependencies
+google-api-python-client==2.161.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.1
+python-dotenv==1.0.1
+pyyaml==6.0.2
+
+# Dev Dependencies (Optional)
+# Install with: pip install -r requirements-dev.txt
+# pytest==7.4.3
+# pytest-cov==4.1.0
+# mypy==1.8.0
+# black==23.12.1
+# ruff==0.1.13
