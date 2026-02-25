@@ -257,7 +257,7 @@ Overall Results: 14/14 PASSED (100%)
 ### Start the System
 
 ```bash
-cd /home/hunain/personal_assistant
+cd <path-to-your-project>
 python main.py start
 ```
 
@@ -268,7 +268,7 @@ python main.py start
 ./scripts/ralph-loop.sh "Process all emails in Needs_Action" \
   --completion-promise "TASK_COMPLETE" \
   --max-iterations 10 \
-  --vault ~/AI_Employee_Vault
+  --vault <path-to-vault>
 
 # Or direct bash pattern
 echo "Process pending tasks" > PROMPT.md
@@ -279,34 +279,47 @@ while :; do cat PROMPT.md | qwen -i -o text; done
 
 ```bash
 # Check pending emails
-ls AI_Employee_Vault/Needs_Action/
+ls <vault-path>/Needs_Action/
 
 # Check approvals waiting
-ls AI_Employee_Vault/Pending_Approval/
+ls <vault-path>/Pending_Approval/
 
 # Check completed tasks
-ls AI_Employee_Vault/Done/
+ls <vault-path>/Done/
 
 # View today's audit log
-cat AI_Employee_Vault/Logs/$(date +%Y-%m-%d).jsonl
+cat <vault-path>/Logs/$(date +%Y-%m-%d).jsonl
 ```
 
 ### Approve/Discard Drafts
 
 ```bash
 # List pending approvals
-ls AI_Employee_Vault/Pending_Approval/
+ls <vault-path>/Pending_Approval/
 
 # Read approval file
-cat AI_Employee_Vault/Pending_Approval/APPROVAL_*.md
+cat <vault-path>/Pending_Approval/APPROVAL_*.md
 
 # To APPROVE - move to Approved/
-mv AI_Employee_Vault/Pending_Approval/APPROVAL_*.md \
-   AI_Employee_Vault/Approved/
+mv <vault-path>/Pending_Approval/APPROVAL_*.md \
+   <vault-path>/Approved/
 
 # To REJECT - move to Rejected/
-mv AI_Employee_Vault/Pending_Approval/APPROVAL_*.md \
-   AI_Employee_Vault/Rejected/
+mv <vault-path>/Pending_Approval/APPROVAL_*.md \
+   <vault-path>/Rejected/
+```
+
+### Configure Vault Path
+
+```bash
+# Option 1: Environment variable
+export VAULT_PATH=/path/to/your/vault
+
+# Option 2: .env file
+echo "VAULT_PATH=/path/to/your/vault" >> .env
+
+# Option 3: Command-line argument (if supported)
+python main.py start --vault /path/to/your/vault
 ```
 
 ---

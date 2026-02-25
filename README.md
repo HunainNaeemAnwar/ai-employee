@@ -39,8 +39,8 @@ A **Digital FTE** that autonomously manages:
 ### Installation
 
 ```bash
-# Navigate to project
-cd /home/hunain/personal_assistant
+# Navigate to your project directory
+cd <path-to-your-project>
 
 # Activate virtual environment
 source .venv/bin/activate
@@ -94,6 +94,45 @@ python scripts/gmail_auth.py
 
 # Step 4: Test authentication
 python scripts/gmail_auth.py --test
+```
+
+---
+
+## ✔ Configuration
+
+### Environment Variables
+
+Create a `.env` file in your project root:
+
+```bash
+# Vault path (optional, defaults to ./AI_Employee_Vault)
+VAULT_PATH=/path/to/your/AI_Employee_Vault
+
+# Gmail polling interval in seconds (default: 120)
+GMAIL_POLL_INTERVAL=120
+
+# Ralph Loop settings
+MAX_ITERATIONS=10
+ITERATION_TIMEOUT=120
+NO_PROGRESS_THRESHOLD=2
+
+# Email rate limiting
+MAX_EMAILS_PER_HOUR=10
+```
+
+### Vault Path
+
+The vault path is configured in this order:
+1. `VAULT_PATH` environment variable
+2. Default: `./AI_Employee_Vault` (relative to project root)
+
+**Example:**
+```bash
+# Set custom vault path
+export VAULT_PATH=/path/to/your/vault
+
+# Or in .env file
+echo "VAULT_PATH=/path/to/your/vault" >> .env
 ```
 
 ---

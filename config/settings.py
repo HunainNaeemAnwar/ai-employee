@@ -28,7 +28,7 @@ class Settings:
         
         # Vault configuration
         self.vault_path = Path(
-            os.getenv("VAULT_PATH", "/home/hunain/personal_assistant/AI_Employee_Vault")
+            os.getenv("VAULT_PATH", os.path.join(os.getcwd(), "AI_Employee_Vault"))
         )
         
         # Watcher settings

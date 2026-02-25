@@ -166,7 +166,7 @@ def get_secret(key: str, vault_path: str = None, required: bool = False) -> Opti
         Secret value or None
     """
     if vault_path is None:
-        vault_path = os.environ.get("VAULT_PATH", "/home/hunain/personal_assistant/AI_Employee_Vault")
+        vault_path = os.environ.get("VAULT_PATH", os.path.join(os.getcwd(), "AI_Employee_Vault"))
     
     manager = get_secrets(vault_path)
     return manager.get(key, required=required)
