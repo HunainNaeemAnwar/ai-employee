@@ -36,65 +36,40 @@ A **Digital FTE** that autonomously manages:
 - Qwen CLI (or Claude Code)
 - Obsidian v1.10.6+
 
-### Installation
+### Complete Setup Flow
 
-```bash
-# Navigate to project directory
-cd personal_assistant
+1. **Create project folder**
+   ```bash
+   mkdir my-ai-employee
+   cd my-ai-employee
+   ```
 
-# Activate virtual environment
-source .venv/bin/activate
+2. **Clone repository**
+   ```bash
+   git clone <repository-url> .
+   ```
 
-# Verify installation
-python main.py status
-```
+3. **Create and activate virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # Linux/Mac
+   # or: .venv\Scripts\activate  # Windows
+   ```
 
-### Start the System
+4. **Install dependencies**
+   ```bash
+   pip install -e .
+   ```
 
-```bash
-# Start the orchestrator (main loop)
-python main.py start
-```
+5. **Authenticate Gmail** (required for email)
+   ```bash
+   python scripts/gmail_auth.py
+   ```
 
-### Obsidian Vault Setup
-
-```bash
-# Vault location
-cd AI_Employee_Vault
-
-# Open in Obsidian:
-# File → Open Vault → Select AI_Employee_Vault folder
-
-# Folder structure (Hackathon Spec):
-# - Inbox/           - New items from watchers
-# - Needs_Action/    - Tasks waiting to be processed
-# - Plans/           - Execution plans
-# - Done/            - Completed tasks
-# - Pending_Approval/- Awaiting human approval
-# - Approved/        - Ready to execute
-# - Rejected/        - Discarded tasks
-# - Logs/            - Audit logs
-```
-
-### Gmail Authentication (Required for Email)
-
-```bash
-# Step 1: Get Gmail API credentials
-# 1. Go to: https://console.cloud.google.com/
-# 2. Create new project or select existing
-# 3. Enable Gmail API
-# 4. Create OAuth 2.0 credentials
-# 5. Download credentials.json
-
-# Step 2: Save credentials
-cp credentials.json AI_Employee_Vault/.system/
-
-# Step 3: Authenticate
-python scripts/gmail_auth.py
-
-# Step 4: Test authentication
-python scripts/gmail_auth.py --test
-```
+6. **Start the system**
+   ```bash
+   python main.py start
+   ```
 
 ---
 
@@ -133,6 +108,33 @@ python main.py start
 
 # Option 2: .env file
 echo "VAULT_PATH=/path/to/your/vault" >> .env
+```
+
+### Gmail Authentication
+
+```bash
+# Step 1: Get Gmail API credentials
+# 1. Go to: https://console.cloud.google.com/
+# 2. Create new project or select existing
+# 3. Enable Gmail API
+# 4. Create OAuth 2.0 credentials
+# 5. Download credentials.json
+
+# Step 2: Save credentials
+cp credentials.json AI_Employee_Vault/.system/
+
+# Step 3: Authenticate
+python scripts/gmail_auth.py
+
+# Step 4: Test authentication
+python scripts/gmail_auth.py --test
+```
+
+### Obsidian Vault
+
+```bash
+# Open in Obsidian:
+# File → Open Vault → Select AI_Employee_Vault folder
 ```
 
 ---

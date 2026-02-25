@@ -257,7 +257,6 @@ Overall Results: 14/14 PASSED (100%)
 ### Start the System
 
 ```bash
-cd personal_assistant
 python main.py start
 ```
 
