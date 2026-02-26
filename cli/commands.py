@@ -103,7 +103,7 @@ def cmd_start(vault_path: str):
 
             # Check approved tasks (only when not processing)
             if not task_processing:
-                _check_approved_tasks(state_manager, email_mcp, vault_path)
+                _check_approved_tasks(state_manager, ralph_loop, email_mcp, vault_path)
 
             # Check pending tasks (only when not processing - one task at a time)
             if not task_processing:
@@ -120,7 +120,7 @@ def cmd_start(vault_path: str):
     print("\n✅ Orchestrator stopped")
 
 
-def _check_approved_tasks(state_manager, email_mcp, vault_path: str):
+def _check_approved_tasks(state_manager, ralph_loop, email_mcp, vault_path: str):
     """Check for approved tasks and execute emails."""
     approved_folder = Path(vault_path) / "Approved"
 
@@ -129,10 +129,10 @@ def _check_approved_tasks(state_manager, email_mcp, vault_path: str):
 
     for filepath in approved_folder.glob("*.md"):
         if filepath.name.startswith('APPROVAL_'):
-            _process_markdown_approval(filepath, state_manager, email_mcp, vault_path)
+            _process_markdown_approval(filepath, state_manager, ralph_loop, email_mcp, vault_path)
 
 
-def _process_markdown_approval(filepath, state_manager, email_mcp, vault_path: str):
+def _process_markdown_approval(filepath, state_manager, ralph_loop, email_mcp, vault_path: str):
     """Process markdown approval file."""
     from utils.files import read_file
     from pathlib import Path
