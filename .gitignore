@@ -7,6 +7,7 @@
 venv/
 env/
 ENV/
+.virtualenvs/
 
 # ===========================================
 # Python
@@ -48,6 +49,9 @@ MANIFEST
 .project
 .pydevproject
 *.iml
+*.bak
+*.tmp
+*.temp
 
 # ===========================================
 # OS
@@ -59,20 +63,35 @@ MANIFEST
 .Trashes
 Thumbs.db
 Desktop.ini
+ehthumbs.db
 
 # ===========================================
 # Vault Secrets (NEVER COMMIT)
 # ===========================================
-AI_Employee_Vault/SECURITY/.env
-AI_Employee_Vault/SECURITY/*.json
-AI_Employee_Vault/SECURITY/whatsapp_session/
+AI_Employee_Vault/.system/
+AI_Employee_Vault/SECURITY/
 
 # ===========================================
 # Vault State (regenerated)
 # ===========================================
-AI_Employee_Vault/SYSTEM/state/current_task.json
-AI_Employee_Vault/SYSTEM/state/prompt.md
-AI_Employee_Vault/SYSTEM/state/complete.flag
+AI_Employee_Vault/.system/state/current_task.json
+AI_Employee_Vault/.system/state/seen_email_ids.json
+AI_Employee_Vault/.system/state/*.json
+
+# ===========================================
+# Vault Processing & Logs
+# ===========================================
+AI_Employee_Vault/PROCESSING/
+AI_Employee_Vault/Logs/*.jsonl
+AI_Employee_Vault/Logs/*.log
+
+# ===========================================
+# Vault Obsidian User State
+# ===========================================
+AI_Employee_Vault/.obsidian/workspace.json
+AI_Employee_Vault/.obsidian/workspace-mobile.json
+AI_Employee_Vault/.obsidian/appearance.json
+AI_Employee_Vault/.obsidian/graph.json
 
 # ===========================================
 # Vault Symlinks (don't track symlinks)
@@ -88,6 +107,7 @@ AI_Employee_Vault/Logs
 *.log
 logs/
 log/
+*.log.*
 
 # ===========================================
 # Testing & Coverage
@@ -102,6 +122,8 @@ pytest-cache/
 .hypothesis/
 coverage.xml
 *.cover
+*.pyc
+.pytest/
 
 # ===========================================
 # Type Checking / Linting
@@ -109,11 +131,15 @@ coverage.xml
 .mypy_cache/
 .ruff_cache/
 .pytype/
+.pyre/
+flake8.pyc
+lint/
 
 # ===========================================
 # Jupyter Notebooks
 # ===========================================
 .ipynb_checkpoints/
+*.ipynb
 
 # ===========================================
 # Environment Variables
@@ -121,9 +147,54 @@ coverage.xml
 .env
 .env.local
 .env.*.local
+.envrc
+*.env
 
 # ===========================================
 # Ralph Loop Logs
 # ===========================================
 .ralph-logs/
 progress.txt
+
+# ===========================================
+# Git & Version Control
+# ===========================================
+.git/
+.gitignore
+*.orig
+MERGE_HEAD
+MERGE_MSG
+CHERRY_EDIT_HEAD
+
+# ===========================================
+# Documentation Build
+# ===========================================
+docs/_build/
+site/
+*.md.bak
+
+# ===========================================
+# Database & SQLite
+# ===========================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ===========================================
+# Node.js (if used)
+# ===========================================
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# ===========================================
+# Misc
+# ===========================================
+*.swp
+*.swo
+*~
+.cache/
+tmp/
+temp/
+.sass-cache/
