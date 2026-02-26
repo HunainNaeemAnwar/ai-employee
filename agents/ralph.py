@@ -424,19 +424,19 @@ BEGIN ITERATION {iteration + 1}:
     def create_plan_file(self, task: 'Task', draft: str) -> 'Path':
         """
         Create Plan.md file to track progress.
-        
+
         Args:
             task: Task being processed
             draft: Draft content from Qwen
-        
+
         Returns:
             Path to created Plan.md file
         """
         from pathlib import Path
-        
-        plans_folder = Path(self.vault_path) / "PROCESSING" / "Plans"
+
+        plans_folder = Path(self.vault_path) / "Plans"
         plans_folder.mkdir(parents=True, exist_ok=True)
-        
+
         plan_file = plans_folder / f"PLAN_{task.id}.md"
         
         content = f"""---
