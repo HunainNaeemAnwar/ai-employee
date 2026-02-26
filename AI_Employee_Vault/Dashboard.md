@@ -1,7 +1,7 @@
 # ✔ AI Employee Dashboard
 
-**Last Updated:** 2026-02-20 04:30:19  
-**Status:** 🟢 Running
+**Last Updated:** 2026-02-26 22:33:26
+**Status:** 🟡 Processing
 
 ---
 
@@ -9,22 +9,22 @@
 
 | Metric | Value |
 |--------|-------|
-| **System Status** | 🟢 Running |
+| **System Status** | 🟡 Processing |
 | **Current Phase** | Bronze (Gmail MVP) |
 | **Uptime** | Running since start |
-| **Last Sync** | 2026-02-20 04:30:19 |
+| **Last Sync** | 2026-02-26 22:33:26 |
 
 ---
 
 ## 📥 Task Queue Status
 
-| Folder                           | Count | Description                 |
-| -------------------------------- | ----- | --------------------------- |
-| **Inbox/Gmail/**                 | 0     | New emails detected         |
-| **Needs_Action/**                | 1     | Tasks waiting to be claimed |
-| **In_Progress/**                 | 1     | Currently being worked on   |
-| **Pending_Approval/**            | 0     | Awaiting human approval     |
-| **Done/**                        | 0     | Tasks completed today       |
+| Folder | Count | Description |
+| ------ | ----- | ----------- |
+| **Inbox/Gmail/** | 0 | New emails detected |
+| **Needs_Action/** | 0 | Tasks waiting to be claimed |
+| **In_Progress/** | 0 | Currently being worked on |
+| **Pending_Approval/** | 0 | Awaiting human approval |
+| **Done/** | 1 | Tasks completed today |
 
 ---
 
@@ -38,23 +38,16 @@
 
 | Metric | Target | Actual |
 |--------|--------|--------|
-| Total Actions | - | 122 |
-| HITL Actions | - | 1 |
+| Total Actions | - | 12 |
+| HITL Actions | - | 0 |
 
 **By Actor:**
-- **GmailWatcher**: 105
-- **Orchestrator**: 13
-- **Qwen**: 1
-- **EmailMCP**: 3
+- **GmailWatcher**: 6
+- **Orchestrator**: 6
 
 **By Result:**
-- **success**: 122
+- **success**: 12
 
----
-
-## 🕐 Recent Activity
-
-*Check `SECURITY/audit_logs/2026-02-20.jsonl` for detailed logs*
 
 ---
 
@@ -62,10 +55,11 @@
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| **Gmail Watcher** | ✔ Active | 120s poll |
-| **Ralph Loop** | 🟡 Working | Iteration 1 |
+| **Gmail Watcher** | ✔ Ready | Authenticated |
+| **Ralph Loop** | 🟡 Working | Iteration 0 |
 | **Email MCP** | ✔ Ready | Gmail API |
-| **Audit Logger** | ✔ Active | Logging to JSONL |
+| **Audit Logger** | ✔ Active | Logging to 2026-02-26.jsonl |
+
 
 ---
 
@@ -73,13 +67,13 @@
 
 ```bash
 # Check status
-python scripts/orchestrator.py status
+python main.py status
 
-# Create test email
-python scripts/orchestrator.py test
+# Start the system
+python main.py start
 
 # Stop the system
-python scripts/orchestrator.py stop
+python main.py stop
 ```
 
 ---
@@ -88,9 +82,16 @@ python scripts/orchestrator.py stop
 
 ```bash
 # Process pending actions manually
-qwen --file AI_Employee_Vault/SYSTEM/prompt.md
+python scripts/ralph_loop.py --vault /home/hunain/personal_assistant/AI_Employee_Vault
+
+# Test email categorization
+python scripts/test_email_categorization.py
 ```
 
 ---
 
 **Next Scheduled Task:** Monday 7 AM CEO Briefing
+
+---
+
+*Dashboard auto-updates every 10 seconds when orchestrator is running*
