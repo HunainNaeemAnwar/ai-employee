@@ -3,33 +3,57 @@
 # ===========================================
 # NEVER COMMIT - Secrets & Credentials
 # ===========================================
-SECURITY/.env
-SECURITY/*.json
-SECURITY/whatsapp_session/
-SECURITY/gmail_token.json
+.system/credentials.json
+.system/*.json
+.system/gmail_token.json
+.system/*.env
+.system/*.key
+.system/*.pem
+.system/*.crt
+
+# ===========================================
+# OAuth & API Tokens
+# ===========================================
+.system/oauth_tokens.json
+.system/access_tokens.json
+.system/api_keys.json
+.system/secrets.json
 
 # ===========================================
 # Runtime State (regenerated)
 # ===========================================
-SYSTEM/state/current_task.json
-SYSTEM/prompt.md
-SYSTEM/state/complete.flag
+.system/state/current_task.json
+.system/state/seen_email_ids.json
+.system/state/*.json
+.system/prompt.md
+.system/state/complete.flag
+
+# ===========================================
+# Processing & Temporary Files
+# ===========================================
+PROCESSING/
+*.tmp
+*.bak
+*~
 
 # ===========================================
 # Logs (optional - commit audit logs if needed)
 # ===========================================
-# SYSTEM/logs/*.log
-# SECURITY/audit_logs/*.jsonl
+Logs/*.jsonl
+Logs/*.log
+*.log
 
 # ===========================================
-# Temporary Files
+# Obsidian User Data (optional)
 # ===========================================
-*.tmp
-*.bak
-*~
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/appearance.json
+.obsidian/graph.json
 
 # ===========================================
 # OS Files
 # ===========================================
 .DS_Store
 Thumbs.db
+desktop.ini
