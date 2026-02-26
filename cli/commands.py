@@ -214,18 +214,12 @@ def _process_markdown_approval(filepath, state_manager, ralph_loop, email_mcp, v
     
     if not subject.lower().startswith('re:'):
         subject = f"Re: {subject}"
-    
-    # Move file to processing folder first (prevent re-processing)
-    processing_folder = Path(vault_path) / "PROCESSING" / "Sending"
-    processing_folder.mkdir(parents=True, exist_ok=True)
-    temp_filepath = processing_folder / filepath.name
-    shutil.move(str(filepath), str(temp_filepath))
-    
+
     print(f"\n✅ Found approval: {filepath.name}")
     print(f"📧 Executing email send...")
     print(f"   To: {recipient}")
     print(f"   Subject: {subject}")
-    
+
     try:
         success = email_mcp.send_email(
             to=recipient,
@@ -233,7 +227,7 @@ def _process_markdown_approval(filepath, state_manager, ralph_loop, email_mcp, v
             body=draft_content,
             in_reply_to=email_id
         )
-        
+
         if success:
             print(f"✅ Email sent successfully")
             # Mark original email as read
@@ -252,22 +246,22 @@ def _process_markdown_approval(filepath, state_manager, ralph_loop, email_mcp, v
             # Move to completed
             completed_folder = Path(vault_path) / "Done" / "approvals"
             completed_folder.mkdir(parents=True, exist_ok=True)
-            temp_filepath.rename(completed_folder / temp_filepath.name)
+            filepath.rename(completed_folder / filepath.name)
             print(f"   📁 Moved to: Done/approvals/")
         else:
             print(f"❌ Email send failed")
             # Move to failed
             failed_folder = Path(vault_path) / "Failed"
             failed_folder.mkdir(parents=True, exist_ok=True)
-            temp_filepath.rename(failed_folder / temp_filepath.name)
+            filepath.rename(failed_folder / filepath.name)
             print(f"   📁 Moved to: Failed/")
-            
+
     except Exception as e:
         print(f"❌ Error sending email: {e}")
         # Move to failed
         failed_folder = Path(vault_path) / "Failed"
         failed_folder.mkdir(parents=True, exist_ok=True)
-        temp_filepath.rename(failed_folder / temp_filepath.name)
+        filepath.rename(failed_folder / filepath.name)
         print(f"   📁 Moved to: Failed/")
 
 
