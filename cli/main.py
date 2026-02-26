@@ -26,7 +26,7 @@ Examples:
     parser.add_argument(
         'command',
         nargs='?',
-        choices=['start', 'status', 'stop', 'test', 'help'],
+        choices=['start', 'status', 'stop', 'test', 'help', 'dashboard'],
         default='help',
         help='Command to run'
     )
@@ -36,9 +36,9 @@ Examples:
         default=str(Path.home() / "personal_assistant" / "AI_Employee_Vault"),
         help='Path to AI_Employee_Vault'
     )
-    
+
     args = parser.parse_args()
-    
+
     # Import command handler
     from .commands import run_command
     run_command(args.command, args.vault)

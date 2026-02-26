@@ -38,10 +38,10 @@ class StateManager:
     def claim_next_pending(self) -> Optional[Task]:
         """Claim the highest priority pending task."""
         pending_folder = self.paths.PENDING
-        
+
         if not pending_folder.exists():
             return None
-        
+
         # Get all pending tasks
         tasks = []
         for filename in pending_folder.glob("*.json"):
@@ -50,17 +50,60 @@ class StateManager:
                 tasks.append((Task(data), filename))
             except Exception:
                 continue
-        
+
         if not tasks:
             return None
-        
+
         # Sort by priority
         priority_order = {"high": 0, "medium": 1, "low": 2}
         tasks.sort(key=lambda x: priority_order.get(x[0].priority, 3))
-        
+
         # Claim first task
         task, filepath = tasks[0]
         return self._claim_task(task, filepath)
+
+    def get_next_in_progress_task(self) -> Optional[Task]:
+        """Get the next task from In_Progress folder that needs processing."""
+        in_progress_folder = self.paths.IN_PROGRESS
+
+        if not in_progress_folder.exists():
+            return None
+
+        # Get all tasks in In_Progress
+        tasks = []
+        for filename in in_progress_folder.glob("*.json"):
+            try:
+                # Double-check file still exists (might have been moved)
+                if not filename.exists():
+                    continue
+                
+                # Also check file size > 0 (not corrupted)
+                if filename.stat().st_size == 0:
+                    continue
+                
+                # Try to read and parse the file to ensure it's valid
+                data = read_json(str(filename))
+                
+                # Only return tasks that haven't been completed/failed
+                status = data.get('status', 'unknown')
+                if status in ['new', 'pending', 'in_progress']:
+                    task = Task(data)
+                    tasks.append((task, filename))
+            except Exception as e:
+                # Skip files that can't be read or are corrupted
+                # This prevents infinite loops from stale references
+                continue
+
+        if not tasks:
+            return None
+
+        # Sort by priority (high priority first)
+        priority_order = {"high": 0, "medium": 1, "low": 2}
+        tasks.sort(key=lambda x: priority_order.get(x[0].priority, 3))
+
+        # Return first task (don't move it, it's already in In_Progress)
+        task, _ = tasks[0]
+        return task
     
     def _claim_task(self, task: Task, filepath: Path) -> Task:
         """Move task from Pending to In_Progress."""

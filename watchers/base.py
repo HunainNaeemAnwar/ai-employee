@@ -54,8 +54,11 @@ class BaseWatcher(ABC):
     
     def create_action_file(self, item: Dict[str, Any]) -> str:
         """Create JSON action file in queue folder."""
+        # Generate ONE UUID
+        task_uuid = uuid.uuid4().hex[:8]
+        
         action = {
-            "id": f"{self.__class__.__name__}_{uuid.uuid4().hex[:8]}",
+            "id": f"{self.__class__.__name__}_{task_uuid}",
             "source": self.__class__.__name__,
             "timestamp": datetime.now().isoformat(),
             "type": self.detect_type(item),
@@ -64,12 +67,14 @@ class BaseWatcher(ABC):
             "status": "new",
             "hitl_required": self.check_hitl_required(item)
         }
-        
-        filename = f"action_{datetime.now():%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:8]}.json"
+
+        # Use task ID as filename for consistent lookup
+        # This ensures In_Progress/{task.id}.json always exists
+        filename = f"{action['id']}.json"
         filepath = self.queue_folder / filename
-        
+
         write_atomic(str(filepath), json.dumps(action, indent=2))
-        
+
         return str(filepath)
     
     async def watch(self):

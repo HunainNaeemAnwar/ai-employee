@@ -270,5 +270,5 @@ auto_approve_rate = (total_tasks - hitl_actions) / total_tasks * 100
 
 ### Manual Invocation
 ```bash
-qwen --file AI_Employee_Vault/SYSTEM/prompt.md --prompt "Generate CEO briefing for this week"
+qwen --file AI_Employee_Vault/.system/state/prompt.md --prompt "Generate CEO briefing for this week"
 ```

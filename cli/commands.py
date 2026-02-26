@@ -18,6 +18,10 @@ from core.state import StateManager
 from agents.ralph import RalphLoop
 from mcp_servers.email_mcp import EmailMCP
 from watchers.gmail import GmailWatcher
+from utils.dashboard import DashboardManager
+
+# Track attempted tasks to prevent infinite loops
+_attempted_task_ids = set()
 
 
 def run_command(command: str, vault_path: str):
@@ -32,6 +36,8 @@ def run_command(command: str, vault_path: str):
         cmd_test(vault_path)
     elif command == 'help':
         cmd_help()
+    elif command == 'dashboard':
+        cmd_dashboard(vault_path)
 
 
 def cmd_start(vault_path: str):
@@ -48,7 +54,8 @@ def cmd_start(vault_path: str):
     ralph_loop = RalphLoop(vault_path)
     email_mcp = EmailMCP(vault_path)
     gmail_watcher = GmailWatcher(vault_path)
-    
+    dashboard_mgr = DashboardManager(vault_path)
+
     # Authenticate Gmail
     if gmail_watcher.authenticate():
         print("✅ Gmail Watcher authenticated")
@@ -58,11 +65,14 @@ def cmd_start(vault_path: str):
     # Main loop
     print("\n🔄 Main loop started (checking every 10 seconds)")
     print("Press Ctrl+C to stop\n")
-    
+
     running = True
     last_gmail_poll = 0
+    last_dashboard_update = 0
     gmail_poll_interval = settings.gmail_poll_interval
-    
+    dashboard_update_interval = 10  # Update dashboard every 10 seconds
+    task_processing = False  # Track if we're processing a task
+
     def signal_handler(sig, frame):
         nonlocal running
         print("\n🛑 Shutting down...")
@@ -72,27 +82,39 @@ def cmd_start(vault_path: str):
     
     while running:
         try:
-            # Poll Gmail every 2 minutes
             current_time = time.time()
+
+            # Poll Gmail every 2 minutes
             if current_time - last_gmail_poll >= gmail_poll_interval:
                 print("\n📧 Polling Gmail...")
                 emails = gmail_watcher.check_for_new_items()
                 print(f"📬 Found {len(emails)} new emails")
-                
+
                 for email in emails:
                     gmail_watcher.create_action_file(email)
-                
+
                 last_gmail_poll = current_time
-            
-            # Check approved tasks
-            _check_approved_tasks(state_manager, email_mcp, vault_path)
-            
-            # Check pending tasks
-            _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path)
-            
+
+            # Update Dashboard every 10 seconds (only when not processing)
+            if not task_processing and current_time - last_dashboard_update >= dashboard_update_interval:
+                print("\n📊 Updating Dashboard...")
+                dashboard_mgr.update_dashboard()
+                last_dashboard_update = current_time
+
+            # Check approved tasks (only when not processing)
+            if not task_processing:
+                _check_approved_tasks(state_manager, email_mcp, vault_path)
+
+            # Check pending tasks (only when not processing - one task at a time)
+            if not task_processing:
+                task_processing = True
+                _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path)
+                task_processing = False  # Reset after processing completes
+
         except Exception as e:
             print(f"⚠️ Error in main loop: {e}")
-        
+            task_processing = False  # Reset on error
+
         time.sleep(10)
     
     print("\n✅ Orchestrator stopped")
@@ -244,26 +266,60 @@ def _process_markdown_approval(filepath, state_manager, email_mcp, vault_path: s
 
 
 def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str):
-    """Process pending tasks."""
+    """Process pending tasks. First check In_Progress, then Needs_Action."""
     from pathlib import Path
     from utils.files import write_atomic
     import uuid
     from datetime import datetime
-    
-    task = state_manager.claim_next_pending()
+    import shutil
 
-    if not task:
-        return
+    # First: Process any tasks already in In_Progress (from previous failed attempts)
+    task = state_manager.get_next_in_progress_task()
 
-    print(f"\n📋 Processing task: {task.id} (type: {task.type})")
-    
+    if task:
+        # Check if task file still exists (might have been moved by another process)
+        in_progress_path = Path(vault_path) / "In_Progress" / f"{task.id}.json"
+        if not in_progress_path.exists():
+            print(f"\n⚠️ Task {task.id} file not found, clearing stale state")
+            # Clear the state file to prevent re-finding this stale task
+            state_file = Path(vault_path) / ".system" / "state" / "current_task.json"
+            if state_file.exists():
+                state_file.unlink()
+                print(f"   🗑️ Cleared stale state file")
+            # Also remove from attempted set to allow re-processing if file reappears
+            _attempted_task_ids.discard(task.id)
+            return
+
+        # Check if we've already attempted this task too many times
+        if task.id in _attempted_task_ids:
+            print(f"\n⚠️ Task {task.id} already attempted, skipping to prevent loop")
+            # Move to Failed to clear it
+            failed_path = Path(vault_path) / "Failed" / f"{task.id}.json"
+            if in_progress_path.exists():
+                in_progress_path.rename(failed_path)
+                print(f"   📁 Moved to: Failed/ (stuck task)")
+            _attempted_task_ids.discard(task.id)  # Clear from tracking
+            return
+        
+        print(f"\n📋 Resuming task from In_Progress: {task.id} (type: {task.type})")
+        # Continue processing this task
+    else:
+        # No tasks in In_Progress, claim new one from Needs_Action
+        task = state_manager.claim_next_pending()
+
+        if not task:
+            return
+
+        print(f"\n📋 Processing new task: {task.id} (type: {task.type})")
+        in_progress_path = Path(vault_path) / "In_Progress" / f"{task.id}.json"
+
     # Auto-skip promotional and no-reply emails (no approval needed)
     no_reply_patterns = ['no-reply', 'noreply', 'donotreply', 'newsletter', 'notifications', 'updates']
     is_no_reply = any(p in task.sender.lower() for p in no_reply_patterns)
     is_promotional = task.type == 'promotional'
-    
+
     if is_no_reply or is_promotional:
-        print(f"   ⏭️ Auto-skipped (type: {task.type}, sender: {task.sender})")
+        print(f"   ⏭️ Auto-skip (type: {task.type}, sender: {task.sender})")
         # Mark email as read
         email_id = task.data.get('email_id')
         if email_id:
@@ -272,20 +328,32 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
                 print(f"   ✅ Marked email as read")
             except Exception as e:
                 print(f"   ⚠️ Could not mark as read: {e}")
-        
-        # Move directly from Needs_Action to Done (auto-skipped emails are not claimed)
-        needs_action_path = Path(vault_path) / "Needs_Action" / f"{task.id}.json"
+
+        # Task is in In_Progress/ - move to Done/
+        # Re-check path since file might have been moved
+        current_path = Path(vault_path) / "In_Progress" / f"{task.id}.json"
         done_path = Path(vault_path) / "Done" / f"{task.id}.json"
-        
-        if needs_action_path.exists():
-            needs_action_path.rename(done_path)
-            print(f"   📁 Moved to: Done/ (auto-skipped)")
+
+        if current_path.exists():
+            current_path.rename(done_path)
+            print(f"   📁 Moved to: Done/ (auto-skip)")
+            # Clear from attempted tracking
+            _attempted_task_ids.discard(task.id)
         else:
-            # Fallback: use state_manager if file was already claimed
-            state_manager.complete_task(task.id, f"Auto-skipped ({task.type})")
-            print(f"   📁 Moved to: Done/ (auto-skipped)")
-        
-        return
+            # File doesn't exist - already processed or error
+            print(f"   ⚠️ Task file not found at {current_path}")
+            # Check if it's already in Done/
+            if done_path.exists():
+                print(f"   ℹ️  Task already in Done/")
+                # Clear from attempted tracking
+                _attempted_task_ids.discard(task.id)
+            else:
+                print(f"   ⚠️ Task file missing - marking as complete")
+                state_manager.complete_task(task.id, f"Auto-skip ({task.type})")
+                # Clear from attempted tracking
+                _attempted_task_ids.discard(task.id)
+
+        return  # Exit after auto-skip
     
     # Mark email as read when claimed (user has seen it by moving to Pending/)
     email_id = task.data.get('email_id')
@@ -300,6 +368,14 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
 
     result = ralph_loop.run(task)
 
+    # Always move task file after Ralph Loop completes (success or failure)
+    in_progress_path = Path(vault_path) / "In_Progress" / f"{task.id}.json"
+
+    # Check if file was already moved (by another process)
+    if not in_progress_path.exists():
+        print(f"   ⚠️ Task file already processed: {task.id}")
+        return
+
     if result.success:
         print(f"✅ Ralph Loop completed in {result.iterations} iterations")
 
@@ -308,13 +384,35 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
 
         if draft_content:
             print(f"📝 Draft created ({len(draft_content)} chars)")
-            
+
             # Create Plan.md file
             try:
                 plan_file = ralph_loop.create_plan_file(task, draft_content)
                 print(f"📋 Plan created: {plan_file.name}")
             except Exception as e:
                 print(f"⚠️ Could not create Plan.md: {e}")
+
+            # Check if approval already exists (prevent duplicates)
+            approval_folder = Path(vault_path) / "Pending_Approval"
+            existing_approvals = list(approval_folder.glob("*.md"))
+            
+            has_approval = False
+            for ap in existing_approvals:
+                try:
+                    ap_content = ap.read_text()
+                    if f"task_id: {task.id}" in ap_content:
+                        has_approval = True
+                        break
+                except:
+                    continue
+            
+            if has_approval:
+                print(f"   ⚠️ Approval already exists, moving task to Done/")
+                done_path = Path(vault_path) / "Done" / f"{task.id}.json"
+                if in_progress_path.exists():
+                    in_progress_path.rename(done_path)
+                    print(f"   📁 Moved to: Done/ (approval exists)")
+                return
 
             # Create approval request
             approval_id = _create_approval_request(
@@ -324,14 +422,45 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
             )
             print(f"📋 Approval created: APPROVAL_{approval_id}.md")
             print(f"   Move to Approved/ to send")
+
+            # Move task from In_Progress/ to Done/ (approval .md is in Pending_Approval/)
+            done_path = Path(vault_path) / "Done" / f"{task.id}.json"
+
+            if in_progress_path.exists():
+                in_progress_path.rename(done_path)
+                print(f"   📁 Task moved to: Done/")
+                # Track as attempted
+                _attempted_task_ids.add(task.id)
+            else:
+                print(f"   ⚠️ Task file not found in In_Progress/: {task.id}")
         else:
             # No draft - task might be categorization only
             print(f"⚠️ No draft created - task may be categorization only")
-            state_manager.complete_task(task.id, "Categorized")
+            # Move to Done/
+            done_path = Path(vault_path) / "Done" / f"{task.id}.json"
+            if in_progress_path.exists():
+                in_progress_path.rename(done_path)
+                print(f"   📁 Task moved to: Done/ (categorized)")
+                # Clear from attempted tracking
+                _attempted_task_ids.discard(task.id)
+            else:
+                state_manager.complete_task(task.id, "Categorized")
+                # Clear from attempted tracking
+                _attempted_task_ids.discard(task.id)
 
     elif result.error:
         print(f"❌ Ralph Loop failed: {result.error}")
-        state_manager.fail_task(task.id, result.error)
+        # Move to Failed/
+        failed_path = Path(vault_path) / "Failed" / f"{task.id}.json"
+        if in_progress_path.exists():
+            in_progress_path.rename(failed_path)
+            print(f"   📁 Task moved to: Failed/")
+            # Clear from attempted tracking
+            _attempted_task_ids.discard(task.id)
+        else:
+            state_manager.fail_task(task.id, result.error)
+            # Clear from attempted tracking
+            _attempted_task_ids.discard(task.id)
 
 
 def _extract_draft_from_output(output: str) -> str:
@@ -455,23 +584,35 @@ Move this file to:
 
 
 def cmd_status(vault_path: str):
-    """Show system status."""
+    """Show system status with real-time data."""
     print("📊 AI Employee System Status")
     print("=" * 50)
-    
+
     state_manager = StateManager(vault_path)
+    dashboard_mgr = DashboardManager(vault_path)
     counts = state_manager.get_queue_counts()
-    
+
+    # Update dashboard with latest data
+    print("\n📊 Refreshing Dashboard...")
+    dashboard_mgr.update_dashboard()
+
     print(f"\n📥 Task Queues:")
-    print(f"  - Pending: {counts.get('pending', 0)}")
+    print(f"  - Inbox/Gmail: {counts.get('inbox_gmail', 0)}")
+    print(f"  - Needs_Action: {counts.get('needs_action', 0)}")
     print(f"  - In Progress: {counts.get('in_progress', 0)}")
     print(f"  - Pending Approval: {counts.get('pending_approval', 0)}")
-    print(f"  - Completed: {counts.get('completed', 0)}")
-    
+    print(f"  - Done: {counts.get('completed', 0)}")
+
     state = state_manager.get_state()
     print(f"\n🔄 Current State:")
     print(f"  - Task ID: {state.get('task_id', 'None')}")
     print(f"  - Status: {state.get('status', 'idle')}")
+
+    # Get audit stats
+    audit_stats = dashboard_mgr.get_audit_stats()
+    print(f"\n📈 Today's Activity:")
+    print(f"  - Total Actions: {audit_stats['total_actions']}")
+    print(f"  - HITL Actions: {audit_stats['hitl_count']}")
 
 
 def cmd_stop():
@@ -501,14 +642,29 @@ Usage:
   ai-employee <command> [options]
 
 Commands:
-  start     Start the orchestrator
-  status    Show system status
-  stop      Stop the orchestrator
-  test      List test files
-  help      Show this help
+  start       Start the orchestrator
+  status      Show system status (updates Dashboard)
+  stop        Stop the orchestrator
+  test        List test files
+  help        Show this help
+  dashboard   Update Dashboard.md with real-time data
 
 Examples:
   ai-employee start
   ai-employee status
+  ai-employee dashboard
   ai-employee test
 """)
+
+
+def cmd_dashboard(vault_path: str):
+    """Update Dashboard.md with real-time data."""
+    print("📊 Updating Dashboard...")
+    dashboard_mgr = DashboardManager(vault_path)
+    success = dashboard_mgr.update_dashboard()
+
+    if success:
+        print("\n✅ Dashboard updated successfully!")
+        print(f"📄 File: {dashboard_mgr.dashboard_file}")
+    else:
+        print("\n❌ Failed to update dashboard")

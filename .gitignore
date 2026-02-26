@@ -6,6 +6,7 @@
 .venv/
 venv/
 env/
+ENV/
 
 # ===========================================
 # Python
@@ -30,21 +31,34 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+*.manifest
+*.spec
 
 # ===========================================
-# IDE
+# IDE / Editors
 # ===========================================
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+*.iml
 
 # ===========================================
 # OS
 # ===========================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
+Desktop.ini
 
 # ===========================================
 # Vault Secrets (NEVER COMMIT)
@@ -73,3 +87,43 @@ AI_Employee_Vault/Logs
 # ===========================================
 *.log
 logs/
+log/
+
+# ===========================================
+# Testing & Coverage
+# ===========================================
+.coverage
+htmlcov/
+.coverage.*
+.tox/
+.nox/
+pytest-cache/
+.pytest_cache/
+.hypothesis/
+coverage.xml
+*.cover
+
+# ===========================================
+# Type Checking / Linting
+# ===========================================
+.mypy_cache/
+.ruff_cache/
+.pytype/
+
+# ===========================================
+# Jupyter Notebooks
+# ===========================================
+.ipynb_checkpoints/
+
+# ===========================================
+# Environment Variables
+# ===========================================
+.env
+.env.local
+.env.*.local
+
+# ===========================================
+# Ralph Loop Logs
+# ===========================================
+.ralph-logs/
+progress.txt

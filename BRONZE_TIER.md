@@ -201,19 +201,23 @@ AI_Employee_Vault/
    -> Outputs draft in ## DRAFT EMAIL format
    |
    v
-5. HITL Approval Required
-   -> Creates APPROVAL_{id}.md in Pending_Approval/
-   -> Human reviews draft
-   -> Human moves file to:
+5. Task Moved to Pending_Approval/
+   -> Original JSON task file moved from In_Progress/ to Pending_Approval/
+   -> Approval markdown file created in Pending_Approval/
+   |
+   v
+6. HITL Approval Required
+   -> Human reviews approval file
+   -> Human moves approval file to:
       - Approved/ -> Send email
       - Rejected/ -> Discard
    |
    v
-6. EmailMCP Sends Email (if approved)
+7. EmailMCP Sends Email (if approved)
    -> Authenticates with Gmail API
    -> Sends email via Gmail
    -> Marks original email as read
-   -> Moves task to Done/
+   -> Moves task from Pending_Approval/ to Done/
    -> Logs action to Logs/YYYY-MM-DD.jsonl
 ```
 
