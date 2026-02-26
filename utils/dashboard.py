@@ -36,7 +36,6 @@ class DashboardManager:
             "Pending_Approval": self.paths.PENDING_APPROVAL,
             "Approved": self.paths.APPROVED,
             "Rejected": self.paths.REJECTED,
-            "Done": self.paths.DONE,
             "Failed": self.paths.FAILED,
             "Plans": self.paths.PLANS,
         }
@@ -49,6 +48,14 @@ class DashboardManager:
                 counts[name] = json_count + md_count
             else:
                 counts[name] = 0
+
+        # Special handling for Done/ - only count approval .md files in approvals/ subfolder
+        # Ignore .json task files in root Done/ folder
+        done_approvals_folder = self.paths.DONE / "approvals"
+        if done_approvals_folder.exists():
+            counts["Done"] = len(list(done_approvals_folder.glob("*.md")))
+        else:
+            counts["Done"] = 0
 
         return counts
 
@@ -247,7 +254,7 @@ class DashboardManager:
 | **Pending_Approval/** | {queue_counts.get('Pending_Approval', 0)} | Awaiting human approval |
 | **Approved/** | {queue_counts.get('Approved', 0)} | Approved, ready to execute |
 | **Rejected/** | {queue_counts.get('Rejected', 0)} | Human-rejected tasks |
-| **Done/** | {queue_counts.get('Done', 0)} | Completed tasks |
+| **Done/** | {queue_counts.get('Done', 0)} | Completed approvals (.md) |
 | **Failed/** | {queue_counts.get('Failed', 0)} | Failed tasks |
 | **Plans/** | {queue_counts.get('Plans', 0)} | Execution plan files |
 
