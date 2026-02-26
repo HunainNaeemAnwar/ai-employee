@@ -1,8 +1,27 @@
 # ✔ Company Handbook
 
-**Version:** 1.0  
-**Effective:** 2026-02-17  
-**Applies to:** AI Employee System
+**Version:** 2.0
+**Effective:** 2026-02-26
+**Applies to:** AI Employee System (Bronze Tier - Gmail MVP)
+
+---
+
+## ✔ System Overview
+
+**Current Phase:** Bronze Tier (Gmail MVP)
+**AI Engine:** Qwen CLI / Claude Code
+**Dashboard:** Obsidian Vault
+**Architecture:** Ralph Wiggum Loop (iterative execution)
+
+### Core Components
+
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Gmail Watcher** | `watchers/gmail.py` | Polls Gmail API, creates task files |
+| **Ralph Loop** | `agents/ralph.py` | Iterative AI reasoning |
+| **Email MCP** | `mcp_servers/email_mcp.py` | Send/read emails via Gmail API |
+| **State MCP** | `mcp_servers/state_mcp.py` | Atomic file operations |
+| **Orchestrator** | `cli/commands.py` | Main event loop |
 
 ---
 
@@ -109,5 +128,55 @@ AI Employee
 
 ---
 
-**Last Updated:** 2026-02-17  
-**Next Review:** 2026-03-17
+## ✔ Agent Skills
+
+**Location:** `.qwen/skills/`
+
+| Skill | Purpose |
+|-------|---------|
+| `email-triage` | Categorize and prioritize emails |
+| `email-reply-draft` | Draft professional replies |
+| `client-lookup` | Check if sender is known client |
+| `ceo-briefing-generator` | Generate weekly CEO briefings |
+
+---
+
+## ✔ Email Processing Flow
+
+```
+1. Gmail Watcher polls Gmail API (every 2 min)
+   → Detects new unread email
+   → Creates JSON file in Inbox/Gmail/
+   |
+   v
+2. Orchestrator moves file to Needs_Action/
+   |
+   v
+3. Auto-Skip Check
+   → Is promotional? → Auto-skip to Done/
+   → Is no-reply sender? → Auto-skip to Done/
+   → Otherwise → Continue to Ralph Loop
+   |
+   v
+4. Ralph Loop Processes Email
+   → Reads email content
+   → Uses email-triage skill to categorize
+   → Uses client-lookup skill to check sender
+   → Uses email-reply-draft skill to draft reply
+   |
+   v
+5. Approval Required (HITL)
+   → Creates APPROVAL_*.md in Pending_Approval/
+   → Moves task to Done/
+   |
+   v
+6. Human Reviews
+   → Moves to Approved/ → Email sent via EmailMCP
+   → Moves to Rejected/ → Archived
+```
+
+---
+
+**Last Updated:** 2026-02-26
+**Next Review:** 2026-03-26
+**Constitution Version:** 2.0
