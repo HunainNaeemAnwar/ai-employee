@@ -1,6 +1,6 @@
 # ✔ AI Employee Dashboard
 
-**Last Updated:** 2026-02-26 22:33:26
+**Last Updated:** 2026-02-27 00:28:53
 **Status:** 🟡 Processing
 
 ---
@@ -12,7 +12,7 @@
 | **System Status** | 🟡 Processing |
 | **Current Phase** | Bronze (Gmail MVP) |
 | **Uptime** | Running since start |
-| **Last Sync** | 2026-02-26 22:33:26 |
+| **Last Sync** | 2026-02-27 00:28:53 |
 
 ---
 
@@ -20,11 +20,17 @@
 
 | Folder | Count | Description |
 | ------ | ----- | ----------- |
-| **Inbox/Gmail/** | 0 | New emails detected |
+| **Inbox/Gmail/** | 0 | New emails to process |
+| **Inbox/WhatsApp/** | 0 | WhatsApp messages |
+| **Inbox/Banking/** | 0 | Banking notifications |
 | **Needs_Action/** | 0 | Tasks waiting to be claimed |
 | **In_Progress/** | 0 | Currently being worked on |
 | **Pending_Approval/** | 0 | Awaiting human approval |
-| **Done/** | 1 | Tasks completed today |
+| **Approved/** | 0 | Approved, ready to execute |
+| **Rejected/** | 0 | Human-rejected tasks |
+| **Done/** | 6 | Completed approvals (.md) |
+| **Failed/** | 0 | Failed tasks |
+| **Plans/** | 6 | Execution plan files |
 
 ---
 
@@ -38,16 +44,25 @@
 
 | Metric | Target | Actual |
 |--------|--------|--------|
-| Total Actions | - | 12 |
+| Total Actions | - | 4 |
 | HITL Actions | - | 0 |
 
 **By Actor:**
-- **GmailWatcher**: 6
-- **Orchestrator**: 6
+- **GmailWatcher**: 2
+- **Orchestrator**: 2
 
 **By Result:**
-- **success**: 12
+- **success**: 4
 
+
+---
+
+## 📊 Recent Activity
+
+- `2026-02-27T00:07:48` | **GmailWatcher** | email_detected → success
+- `2026-02-27T00:08:28` | **Orchestrator** | task_claimed → success
+- `2026-02-27T00:23:24` | **GmailWatcher** | email_detected → success
+- `2026-02-27T00:26:05` | **Orchestrator** | task_claimed → success
 
 ---
 
@@ -56,9 +71,11 @@
 | Component | Status | Details |
 |-----------|--------|---------|
 | **Gmail Watcher** | ✔ Ready | Authenticated |
-| **Ralph Loop** | 🟡 Working | Iteration 0 |
+| **Ralph Loop** | 🟡 Working | Iteration 0 on GmailWatcher_e8d221cc |
 | **Email MCP** | ✔ Ready | Gmail API |
-| **Audit Logger** | ✔ Active | Logging to 2026-02-26.jsonl |
+| **Audit Logger** | ✔ Active | 951 bytes today |
+| **State Manager** | ✔ Active | State file exists |
+| **Plans Folder** | ✔ Active | 6 plan files |
 
 
 ---
