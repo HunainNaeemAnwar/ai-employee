@@ -469,7 +469,55 @@ Draft created by Ralph Loop in {task.iteration if hasattr(task, 'iteration') els
 """
         write_atomic(str(plan_file), content)
         return plan_file
-    
+
+    def update_plan_file(self, task_id: str, vault_path: str = None) -> bool:
+        """
+        Update Plan.md file to mark all steps as completed.
+
+        Args:
+            task_id: ID of the completed task
+            vault_path: Path to vault (optional, uses self.vault_path if not provided)
+
+        Returns:
+            True if plan was updated successfully, False otherwise
+        """
+        from pathlib import Path
+
+        vault = Path(vault_path) if vault_path else Path(self.vault_path)
+        plan_file = vault / "Plans" / f"PLAN_{task_id}.md"
+
+        if not plan_file.exists():
+            return False
+
+        try:
+            content = plan_file.read_text()
+
+            # Update status in frontmatter
+            import re
+            content = re.sub(
+                r'status:\s*pending_approval',
+                'status: completed',
+                content
+            )
+
+            # Add completed timestamp if not present
+            if 'completed:' not in content:
+                content = re.sub(
+                    r'(created:\s*\S+)',
+                    f'\\1\ncompleted: {datetime.now().isoformat()}',
+                    content
+                )
+
+            # Mark all steps as complete
+            content = re.sub(r'^- \[ \]', '- [x]', content, flags=re.MULTILINE)
+
+            write_atomic(str(plan_file), content)
+            return True
+
+        except Exception as e:
+            print(f"⚠️ Could not update plan file: {e}")
+            return False
+
     def _cleanup(self) -> None:
         """Clean up temporary files."""
         if self.prompt_file.exists():

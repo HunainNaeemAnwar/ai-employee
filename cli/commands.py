@@ -243,6 +243,12 @@ def _process_markdown_approval(filepath, state_manager, email_mcp, vault_path: s
                     print(f"   ✅ Marked original email as read (ID: {email_id})")
                 except Exception as e:
                     print(f"   ⚠️ Could not mark as read: {e}")
+            # Update plan file to mark all steps as complete
+            try:
+                ralph_loop.update_plan_file(task_id, vault_path)
+                print(f"   📋 Plan file updated with completion status")
+            except Exception as e:
+                print(f"   ⚠️ Could not update plan file: {e}")
             # Move to completed
             completed_folder = Path(vault_path) / "Done" / "approvals"
             completed_folder.mkdir(parents=True, exist_ok=True)
@@ -436,6 +442,12 @@ def _process_pending_tasks(state_manager, ralph_loop, email_mcp, vault_path: str
         else:
             # No draft - task might be categorization only
             print(f"⚠️ No draft created - task may be categorization only")
+            # Update plan file to mark as complete
+            try:
+                ralph_loop.update_plan_file(task.id, vault_path)
+                print(f"   📋 Plan file updated with completion status")
+            except Exception as e:
+                print(f"   ⚠️ Could not update plan file: {e}")
             # Move to Done/
             done_path = Path(vault_path) / "Done" / f"{task.id}.json"
             if in_progress_path.exists():
