@@ -1,0 +1,24 @@
+{
+  "id": "GmailWatcher_4a3149d1",
+  "source": "GmailWatcher",
+  "timestamp": "2026-02-27T00:07:48.216621",
+  "type": "general",
+  "priority": "low",
+  "data": {
+    "email_id": "19c9b58cae57c7bd",
+    "thread_id": "19c9b58cae57c7bd",
+    "labels": [
+      "UNREAD",
+      "CATEGORY_PERSONAL",
+      "INBOX"
+    ],
+    "received_at": "2026-02-27T00:06:40",
+    "from": "Hunain Naeem Anwar <hunainnaeemanwar@gmail.com>",
+    "subject": "Test of email account",
+    "to": "arhaamkhan125@gmail.com",
+    "body": "Dear Arhaam,\r\n\r\nThis is a test email to verify that the email system is working correctly.\r\nPlease ignore this message if no action is required.\r\n\r\nKindly let me know if you have successfully received this email.\r\n\r\nBest regards,\r\nHunain\r\n",
+    "has_attachments": false
+  },
+  "status": "new",
+  "hitl_required": true
+}

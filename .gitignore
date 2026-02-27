@@ -94,14 +94,6 @@ AI_Employee_Vault/.obsidian/appearance.json
 AI_Employee_Vault/.obsidian/graph.json
 
 # ===========================================
-# Vault Symlinks (don't track symlinks)
-# ===========================================
-AI_Employee_Vault/Inbox
-AI_Employee_Vault/Needs_Action
-AI_Employee_Vault/Done
-AI_Employee_Vault/Logs
-
-# ===========================================
 # Logs
 # ===========================================
 *.log

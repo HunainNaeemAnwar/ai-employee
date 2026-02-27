@@ -1,0 +1,24 @@
+{
+  "id": "GmailWatcher_95c5e734",
+  "source": "GmailWatcher",
+  "timestamp": "2026-02-26T22:32:02.859276",
+  "type": "general",
+  "priority": "low",
+  "data": {
+    "email_id": "19c9b00cc99bf48e",
+    "thread_id": "19c9b00cc99bf48e",
+    "labels": [
+      "UNREAD",
+      "CATEGORY_PERSONAL",
+      "INBOX"
+    ],
+    "received_at": "2026-02-26T22:30:34",
+    "from": "Hunain Naeem Anwar <hunainnaeemanwar@gmail.com>",
+    "subject": "Test email",
+    "to": "arhaamkhan125@gmail.com",
+    "body": "Dear Hunain,\r\n\r\nThank you for your test email. I can confirm that I have successfully\r\nreceived this message and the email system is functioning correctly.\r\n\r\nBest regards,\r\nAI Employee\r\n",
+    "has_attachments": false
+  },
+  "status": "new",
+  "hitl_required": true
+}
